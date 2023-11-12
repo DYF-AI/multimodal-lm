@@ -1,60 +1,42 @@
-import os.path
+import os
 import time
 import json
-import multiprocessing
 from tqdm import tqdm
+import multiprocessing
 from multimodallm.utils.file_utils import getAllFiles
+from paddleocr import PaddleOCR
+from multimodallm.ocr_system.ocr_infer import ocr_predict
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
-
-from multimodallm.utils.image_utils import load_image
-from paddleocr import PaddleOCR
-ocr = PaddleOCR(
-    use_angle_cls=True,
-    use_gpu=True,
-    ocr_version="PP-OCRv4",
-    det_db_box_thresh=0.1,
-    det_db_thresh=0.1,
-
-)
-
-def ocr_predict(image_file:str):
-    image_data, _ = load_image(image_file, return_chw=False)
-    text_list = ocr.ocr(image_data, cls=True)
-    if text_list[0] is None: return []
-    ocr_result = []
-    for text in text_list[0]:
-        ocr_result.append(
-            {
-                "transcription": text[1][0],
-                "points": text[0],
-                "score":  text[1][1],
-                "difficult": "false"
-            }
-        )
-    return (image_file, ocr_result)
 
 def get_predicted_file(file:str):
     predicted_files = []
     with open(file, "r", encoding="utf-8") as f:
-        for line in f:
+        for line in tqdm(f, desc="get_predicted_file"):
             split_line = line.strip().split("\t")
             predicted_files.append(split_line[0])
     return predicted_files
 
 
-def run_ocr_predict(image_root:str, use_mp=True):
+def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
     all_image_files = getAllFiles(image_root, [".jpg", ".jpeg", ".gif", ".png", ".bmp"])
-    predicted_files = get_predicted_file(r"J:\data\mllm-data\image-book\Label_continue_v3.txt")
-    to_predict_image_files = []
-    for imge_file in tqdm(all_image_files):
-        image_file_name_split = imge_file.split("\\")
-        image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
-        if image_file_name in predicted_files:
-            print(f"{image_file_name} has predicted, continue!")
-            continue
-        to_predict_image_files.append(imge_file)
-    all_image_files = to_predict_image_files
+    ocr = PaddleOCR(
+        use_angle_cls=True,
+        use_gpu=True,
+        ocr_version="PP-OCRv4",
+        det_db_box_thresh=0.1,
+        det_db_thresh=0.1,
+    )
+    if predicted_file is not None:
+        predicted_files = get_predicted_file(predicted_file)
+        to_predict_image_files = []
+        for imge_file in tqdm(all_image_files, desc="to_predict_image_files"):
+            image_file_name_split = imge_file.split("\\")
+            image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
+            if image_file_name in predicted_files:
+                continue
+            to_predict_image_files.append(imge_file)
+        all_image_files = to_predict_image_files
 
     all_ocr_reulsts = []
     if not use_mp:
@@ -65,7 +47,7 @@ def run_ocr_predict(image_root:str, use_mp=True):
         writer2 = open(save_fileState, "w", encoding="utf-8")
         for index, image_file in enumerate(tqdm(all_image_files)):
             print(image_file)
-            ocr_result = ocr_predict(image_file)
+            ocr_result = ocr_predict(image_file, ocr=ocr)
             if len(ocr_result) == 0: continue
             image_file_name_split = ocr_result[0].split("\\")
             image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
@@ -80,7 +62,7 @@ def run_ocr_predict(image_root:str, use_mp=True):
         pool = multiprocessing.Pool(processes=6)
         result_queue = multiprocessing.Manager().Queue()
         for image_file in tqdm(all_image_files):
-            pool.apply_async(func=ocr_predict, args=(image_file,), callback=result_queue.put)
+            pool.apply_async(func=ocr_predict, args=(image_file, ocr,), callback=result_queue.put)
             time.sleep(0.5)
         pool.close()
         pool.join()
@@ -102,7 +84,8 @@ def test_ocr_predict():
 def test_run_ocr_predict():
     image_root = r"J:\data\mllm-data\image-book"
     #image_root = r"J:\data\mllm-data\crawler-data\image\法律法规"
-    all_ocr_reulsts = run_ocr_predict(image_root, use_mp=False)
+    predicted_file = r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
+    all_ocr_reulsts = run_ocr_predict(image_root, use_mp=False, predicted_file=predicted_file)
 
     save_label = os.path.join(image_root, "Label1.txt")
     save_fileState = os.path.join(image_root, "fileState1.txt")

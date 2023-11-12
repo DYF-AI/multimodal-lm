@@ -6,13 +6,15 @@ from PIL import Image
 
 
 
-def load_image(image_path:str, return_chw:bool=True, size:tuple=None):
-    image = Image.open(image_path).convert("RGB")
+def load_image(image_path:str, return_chw:bool=True, return_bgr:bool=True, size:tuple=None):
+    image_pil = Image.open(image_path).convert("RGB")
     if size is not None:
-        image = image.resize(size)   # resize image
-    image = np.asarray(image)
-    image = image[:, :, ::-1]    # flip color channels from RGB to BGR
+        image_pil = image_pil.resize(size)   # resize image
+    image = np.asarray(image_pil)
+    image_pil.close()
     w, h = image.shape[1], image.shape[0] # update size after resize
+    if return_bgr:
+        image = image[:, :, ::-1]    # flip color channels from RGB to BGR
     if return_chw:
         image = image.transpose(2, 0, 1)
     return image, (w, h)

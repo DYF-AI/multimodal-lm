@@ -17,7 +17,7 @@ def merge_ocr_result(ocr_result_1:str, ocr_result_2, save_merge_result:str):
         f3.flush()
 
 if __name__ == "__main__":
-    ocr_result_1 = r"J:\data\mllm-data\image-book\Label_continue_v2.txt"
+    ocr_result_1 = r"J:\data\mllm-data\image-book\Label_continue_v3.txt"
     ocr_result_2 = r"J:\data\mllm-data\image-book\Label.txt"
-    save_merge_result = r"J:\data\mllm-data\image-book\Label_continue_v3.txt"
+    save_merge_result = r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
     merge_ocr_result(ocr_result_1, ocr_result_2, save_merge_result)

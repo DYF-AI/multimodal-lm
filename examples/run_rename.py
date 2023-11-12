@@ -2,6 +2,9 @@ import os
 import shutil
 from tqdm import tqdm
 
+"""
+    只要针对cv2无法进行读取的文件名进行修改, 使用魔改的ppocrlabel-pil可以解决文件路径读取的问题
+"""
 def rename(image_root:str, feature="%", new_name_startwith="image")->bool:
     files = [file for file in os.listdir(image_root) if file.startswith(feature)]
     for index, file_name in enumerate(tqdm(files)):
