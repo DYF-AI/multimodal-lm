@@ -4,6 +4,11 @@ import shutil
 import numpy as np
 from multimodallm.utils.image_utils import load_image
 from PyQt5.QtGui import QImage, QCursor, QPixmap, QImageReader
+
+"""
+    测试cv2读取图片错误
+"""
+
 image_root = r"J:\data\mllm-data\image-crawler"
 
 dirs = [dir for dir in os.listdir(image_root) if not dir.endswith(".txt")]

@@ -9,6 +9,10 @@ from multimodallm.ocr_system.ocr_infer import ocr_predict
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
 
+"""
+    批量跑ocr模型,生成ppocrlabel格式的结果
+"""
+
 def get_predicted_file(file:str):
     predicted_files = []
     with open(file, "r", encoding="utf-8") as f:

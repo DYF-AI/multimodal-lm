@@ -5,6 +5,9 @@ from tqdm import tqdm
 from multimodallm.utils.image_utils import load_image, pdf_to_images
 from multimodallm.utils.file_utils import getAllFiles
 
+"""
+    测试读取图片
+"""
 def test_load_image():
     #image_path = "/mnt/j/data/mllm-data/image/病历资料/0b7b02087bf40ad1d7089f2a552c11dfa8ecce0f.jpg"
     #image_path = r"J:\data\mllm-data\image\病历资料\0b7b02087bf40ad1d7089f2a552c11dfa8ecce0f.jpg"

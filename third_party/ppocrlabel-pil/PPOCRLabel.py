@@ -23,6 +23,7 @@ import subprocess
 import sys
 import xlrd
 from functools import partial
+from tqdm import tqdm
 
 from PyQt5.QtCore import QSize, Qt, QPoint, QByteArray, QTimer, QFileInfo, QPointF, QProcess
 from PyQt5.QtGui import QImage, QCursor, QPixmap, QImageReader
@@ -2622,7 +2623,7 @@ class MainWindow(QMainWindow):
         else:
             with open(labelpath, 'r', encoding='utf-8') as f:
                 data = f.readlines()
-                for each in data:
+                for index, each in enumerate(tqdm(data)):
                     file, label = each.split('\t')
                     if label:
                         label = label.replace('false', 'False')

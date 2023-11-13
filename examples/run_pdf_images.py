@@ -4,6 +4,10 @@ import multiprocessing
 from multimodallm.utils.image_utils import load_image, pdf_to_images
 from multimodallm.utils.file_utils import getAllFiles
 
+"""
+    批量将pdf转成图片
+"""
+
 def test_pdf_to_image():
     pdf_file = r"K:\doc\book\Python设计模式-第2版-[印]Chetan Giridhar-韩波译2017.pdf"
     save_image_path = r"K:\doc\book"

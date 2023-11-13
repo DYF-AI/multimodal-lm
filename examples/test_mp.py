@@ -1,5 +1,8 @@
 import multiprocessing
 
+"""
+    多进程运行样例
+"""
 def worker(num, num2):
     """ 每个进程需要执行的任务 """
     print('Worker %d started' % num)
