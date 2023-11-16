@@ -35,7 +35,7 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
         predicted_files = get_predicted_file(predicted_file)
         to_predict_image_files = []
         for imge_file in tqdm(all_image_files, desc="to_predict_image_files"):
-            image_file_name_split = imge_file.split("\\")
+            image_file_name_split = imge_file.split("/")
             image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
             if image_file_name in predicted_files:
                 continue
@@ -53,7 +53,7 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
             print(image_file)
             ocr_result = ocr_predict(image_file, ocr=ocr)
             if len(ocr_result) == 0: continue
-            image_file_name_split = ocr_result[0].split("\\")
+            image_file_name_split = ocr_result[0].split("/")
             image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
             writer1.write(image_file_name + "\t" + json.dumps(ocr_result[1], ensure_ascii=False) + "\n")
             writer2.write(ocr_result[0] + "\t" + str(1) + "\n")
@@ -86,27 +86,35 @@ def test_ocr_predict():
 
 
 def test_run_ocr_predict():
-    image_root = r"J:\data\mllm-data\image-book"
+    #image_root = r"J:\data\mllm-data\image-book"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-人物介绍"
+    image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-产品说明"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-保单材料"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-作文"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-判决书"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-名片"
+    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-法律法规"
+
     #image_root = r"J:\data\mllm-data\crawler-data\image\法律法规"
-    predicted_file = r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
+    predicted_file = None # r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
     all_ocr_reulsts = run_ocr_predict(image_root, use_mp=False, predicted_file=predicted_file)
 
-    save_label = os.path.join(image_root, "Label1.txt")
-    save_fileState = os.path.join(image_root, "fileState1.txt")
+    #save_label = os.path.join(image_root, "Label1.txt")
+    #save_fileState = os.path.join(image_root, "fileState1.txt")
 
-    writer1 = open(save_label, "w", encoding="utf-8")
-    writer2 = open(save_fileState, "w", encoding="utf-8")
+    #writer1 = open(save_label, "w", encoding="utf-8")
+    #writer2 = open(save_fileState, "w", encoding="utf-8")
     # ppocrlabel-pil format
-    for result in tqdm(all_ocr_reulsts):
-        if len(result[0]) == 0: continue
-        label_file_name_split = result[0].split("\\")
-        label_file_name = label_file_name_split[-2] + "/" + label_file_name_split[-1]
-        writer1.write(label_file_name + "\t" + json.dumps(result[1][1], ensure_ascii=False) + "\n")
-        writer2.write(result[0] + "\t" + str(1) + "\n")
-        writer1.flush()
-        writer2.flush()
-    writer1.close()
-    writer2.close()
+    # for result in tqdm(all_ocr_reulsts):
+    #     if len(result[0]) == 0: continue
+    #     label_file_name_split = result[0].split("\\")
+    #     label_file_name = label_file_name_split[-2] + "/" + label_file_name_split[-1]
+    #     writer1.write(label_file_name + "\t" + json.dumps(result[1][1], ensure_ascii=False) + "\n")
+    #     writer2.write(result[0] + "\t" + str(1) + "\n")
+    #     writer1.flush()
+    #     writer2.flush()
+    # writer1.close()
+    # writer2.close()
 
 
 if __name__ == "__main__":
