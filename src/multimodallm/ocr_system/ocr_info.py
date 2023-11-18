@@ -135,7 +135,7 @@ class PicInfo:
     def from_ocr_res(cls, ocr_data):
         #ocr_data = json.load(ocr_res)
         file_id = ocr_data["file_id"]
-        size = ocr_data["size"]
+        size = ocr_data["size"] if "size" in ocr_data else None
         bboxes = ocr_data["bboxes"]
         bounding_boxes = [BBoxInfo.from_ocr_box(box, i) for i, box in enumerate(bboxes)]
         return cls(
@@ -218,7 +218,7 @@ class BBoxInfo:
         assert len(bbox["points"]) == 4
         bbox_coords = bbox["points"]
         bbox_text = bbox["transcription"]
-        box_score = float(bbox["score"])
+        box_score = float(bbox["score"]) if "score" in bbox else 0.
         char_mid_coords = bbox["char_mid_coords"] if "char_mid_coords" in bbox else None
 
         return cls(
