@@ -3,12 +3,14 @@ import os
 from dataclasses import dataclass
 from typing import Union, Optional, Dict, Tuple, List, Any
 import re
-
+import pytorch_lightning as pl
 import datasets
 import numpy as np
 import torch
 import yaml
 import torch.nn as nn
+from nltk import edit_distance
+from pytorch_lightning import Callback
 from transformers import GenerationConfig, Seq2SeqTrainingArguments, DonutProcessor, VisionEncoderDecoderConfig, \
     VisionEncoderDecoderModel, Seq2SeqTrainer, EarlyStoppingCallback
 from multimodallm.collator import DataCollatorForGeneration
@@ -34,6 +36,9 @@ class GenSeq2SeqTrainer(Seq2SeqTrainer):
 
 
 class CustomDonutModelHFTrainer:
+    """
+        huggingface trainer
+    """
     def __init__(self,
                  model_config: VisionEncoderDecoderConfig,
                  training_args: Seq2SeqTrainingArguments,
@@ -122,3 +127,129 @@ class CustomDonutModelHFTrainer:
             compute_metrics=self.computer_metrics,
             callbacks=[EarlyStoppingCallback(early_stopping_patience=3)]
         )
+
+
+
+class SaveModelCallback(Callback):
+    def __init__(self, save_model_path):
+        self.best_val_metric = 100
+        self.model_model_path = save_model_path
+    def on_train_epoch_end(self, trainer, pl_module):
+        print(f"Pushing model to the hub, epoch {trainer.current_epoch}")
+        if trainer.callback_metrics['val_metric'] < self.best_val_metric:
+            print(f"save current best model: epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}")
+            model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
+            #model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}"
+            if not os.path.exists(model_save_path):
+                os.makedirs(model_save_path)
+            pl_module.processor.save_pretrained(model_save_path,
+                                                commit_message=f"Training in progress, epoch {trainer.current_epoch}")
+            pl_module.model.save_pretrained(model_save_path,
+                                            commit_message=f"Training in progress, epoch {trainer.current_epoch}")
+            self.best_val_metric = trainer.callback_metrics['val_metric']
+
+    def on_train_end(self, trainer, pl_module):
+        print(f"Pushing model to the hub after training")
+        # pl_module.processor.push_to_hub("nielsr/donut-demo", commit_message=f"Training done")
+        #model_save_path = f"{self.model_model_path}/epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}"
+        model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
+        if not os.path.exists(model_save_path):
+            os.makedirs(model_save_path)
+        pl_module.processor.save_pretrained(model_save_path, commit_message=f"Training done")
+        pl_module.model.save_pretrained(model_save_path, commit_message=f"Training done")
+
+class CustomDonutModelPLTrainer(pl.LightningModule):
+    """
+        pytorch-lightning trainer
+    """
+    def __init__(self,
+                 config,
+                 processor,
+                 model,
+                 model_train_dataloader,
+                 model_val_dataloader,
+                 max_length=768):
+        super().__init__()
+        self.config = config
+        self.processor = processor
+        self.model = model
+        self.model_train_dataloader = model_train_dataloader
+        self.model_val_dataloader = model_val_dataloader
+        self.max_length = max_length
+        self.validation_step_outputs = []
+
+    def training_step(self, batch, batch_idx):
+        ids, pixel_values, angles, ground_truths, labels, targets, _ = batch
+        outputs = self.model(pixel_values, labels=labels)
+        loss = outputs.loss
+        self.log_dict({"train_loss": loss}, sync_dist=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx, dataset_idx=0):
+        ids, pixel_values, angles, ground_truths, labels, targets, _ = batch
+        batch_size = pixel_values.shape[0]
+        # we feed the prompt to the model
+        decoder_input_ids = torch.full((batch_size, 1), self.model.config.decoder_start_token_id, device=self.device)
+        outputs = self.model.generate(pixel_values,
+                                      decoder_input_ids=decoder_input_ids,
+                                      max_length=self.max_length,
+                                      early_stopping=True,
+                                      pad_token_id=self.processor.tokenizer.pad_token_id,
+                                      eos_token_id=self.processor.tokenizer.eos_token_id,
+                                      use_cache=True,
+                                      num_beams=1,
+                                      bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
+                                      return_dict_in_generate=True, )
+        predictions = []
+        for seq in self.processor.tokenizer.batch_decode(outputs.sequences):
+            seq = seq.replace(self.processor.tokenizer.eos_token, "").replace(self.processor.tokenizer.pad_token, "")
+            seq = re.sub(r"<.*?>", "", seq, count=1).strip()  # remove first task start token
+            predictions.append(seq)
+
+        scores = list()
+        for pred, answer in zip(predictions, ground_truths):
+            pred = re.sub(r"(?:(?<=>) | (?=</s_))", "", pred)
+            # NOT NEEDED ANYMORE
+            # answer = re.sub(r"<.*?>", "", answer, count=1)
+            answer = answer.replace(self.processor.tokenizer.eos_token, "")
+            scores.append(edit_distance(pred, answer) / max(len(pred), len(answer)))
+
+            if self.config.get("verbose", False) and len(scores) == 1:
+                print(f"\nPrediction: {self.processor.token2json(pred)}")
+                print(f"    Answer: {self.processor.token2json(answer)}")
+                print(f" Normed ED: {scores[0]}")
+        self.validation_step_outputs.append(scores)
+        return scores
+
+    def on_validation_epoch_end(self):
+        # I set this to 1 manually
+        # (previously set to len(self.config.dataset_name_or_paths))
+        num_of_loaders = 1
+        if num_of_loaders == 1:
+            self.validation_step_outputs = [self.validation_step_outputs]
+        assert len(self.validation_step_outputs) == num_of_loaders
+        cnt = [0] * num_of_loaders
+        total_metric = [0] * num_of_loaders
+        val_metric = [0] * num_of_loaders
+        for i, results in enumerate(self.validation_step_outputs):
+            for scores in results:
+                cnt[i] += len(scores)
+                total_metric[i] += np.sum(scores)
+            val_metric[i] = total_metric[i] / cnt[i]
+            val_metric_name = f"val_metric_{i}th_dataset"
+            self.log_dict({val_metric_name: val_metric[i]}, sync_dist=True)
+        self.log_dict({"val_metric": np.sum(total_metric) / np.sum(cnt)}, sync_dist=True)
+        self.validation_step_outputs.clear()
+
+    def configure_optimizers(self):
+        # TODO add scheduler
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.config.get("lr"))
+
+        return optimizer
+
+    def train_dataloader(self):
+        return self.model_train_dataloader
+
+    def val_dataloader(self):
+        return self.model_val_dataloader
+

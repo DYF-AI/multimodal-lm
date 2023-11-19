@@ -4,6 +4,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+src/multimodallm/wandb
 
 # C extensions
 *.so
@@ -33,6 +34,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+src/multimodallm/lightning_logs
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -83,10 +83,7 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
 
 
 def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
-    # expand_vocab_set = set()
-    #expand_vocab = ["<s_gt_parse>", "</s_gt_parse>", "<s_text_sequence>", "</s_text_sequence>"]
     target_sequence = [json2token(json.loads(v), sort_key=sort_key) for v in rows["ground_truth"]]
-    #tojson = token2json(target_sequence[1], expand_vocab=expand_vocab)
     labels = processor.tokenizer(
         target_sequence,
         add_special_tokens=False,
@@ -95,6 +92,7 @@ def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=
         truncation=True,
         return_tensors="np",
     )["input_ids"]
+    # eager：缓存图片数据， 开启缓存需要大量内存
     if not eager:
         return {
             "labels":labels,
@@ -102,11 +100,13 @@ def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=
             "random_padding":[random_padding for _ in range(len(labels))]
         }
     image_list = rows["image"]
-
+    image_angle_list = []
     for image, angle in zip(rows["image"], rows["angle"]):
         if angle:
             image = image.rotate(360-angle)
-        image_list.append(image)
+            image_angle_list.append(image)
+    if len(image_angle_list) == len(image_list):
+        image_list = image_angle_list
     pixel_values = processor(image_list, random_padding=random_padding, return_tensors="np").pixel_values
 
     return {

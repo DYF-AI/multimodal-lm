@@ -8,6 +8,7 @@ from datasets import load_dataset
 from datasets.arrow_writer import ArrowWriter
 from datasets import Dataset, DatasetDict
 
+from multimodallm.utils.image_utils import load_image
 
 dataset_features = datasets.Features(
     {
@@ -25,10 +26,11 @@ def generate_example(metadata_path:str, image_path:str):
             print(sample)
             file_name = sample["file_name"]
             image_file = os.path.join(image_path, file_name)
-            #original_image, size = load_image(image_file)
+            original_image, size = load_image(image_file, return_chw=False, return_bgr=False)
             record = {
                 "id": file_name,
-                "image": image_file,
+                #"image": image_file,
+                "image": original_image,
                 "angle": sample.get("angle", 0),
                 "ground_truth": json.dumps(json.loads(sample["text"]), ensure_ascii=False)
             }
@@ -56,12 +58,12 @@ if __name__ == "__main__":
     train_image_path = r"J:\data\mllm-data\mllm-finetune-data\trainticket\train"
     save_arrow_root = r"J:\data\mllm-data\mllm-finetune-data\trainticket"
     train_metadata_path = os.path.join(train_image_path, "metadata.jsonl")
-    train_output_path = os.path.join(save_arrow_root, "train.arrow")
+    train_output_path = os.path.join(save_arrow_root, "train_cache.arrow")
 
     #test_image_path = "/mnt/j/dataset/document-intelligence/EATEN数据集/dataset_trainticket/test"
     test_image_path = r"J:\data\mllm-data\mllm-finetune-data\trainticket\test"
     test_metadata_path = os.path.join(test_image_path, "metadata.jsonl")
-    test_output_path = os.path.join(save_arrow_root, "test.arrow")
+    test_output_path = os.path.join(save_arrow_root, "test_cache.arrow")
 
     build_data(train_metadata_path, train_image_path, train_output_path)
     build_data(test_metadata_path, test_image_path, test_output_path)
