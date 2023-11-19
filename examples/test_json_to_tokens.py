@@ -1,4 +1,4 @@
-from multimodallm.dataset import json2token, token2json
+from multimodallm.utils.data_utils import json2token, token2json
 
 if __name__ == "__main__":
     sequence = '{"gt_parse": {"text_sequence": "折页传单画册</n>CD</n>CD</n>Digi Pack</n>DigiPack</n>低至</n>工厂直销 买贵包退</n>1</n>专业印刷 免费设计</n>夫 /份"}}'

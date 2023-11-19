@@ -8,10 +8,11 @@ import datasets
 from datasets.arrow_writer import ArrowWriter
 
 from multimodallm.ocr_system.ocr_info import PicInfo
-from multimodallm.utils import json2token, token2json
-from multimodallm.dataset import preprocess
+from multimodallm.utils.data_utils import preprocess
+
 
 """
+    预训练数据处理
     1. processing_meta_data: label -> meta_data
     2. processing_arrow_data: meta_data -> arrow_data
 """

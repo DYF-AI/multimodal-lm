@@ -1,8 +1,12 @@
 import re
+import torch
 import json
-from typing import Any
-
+from typing import Any, Union, Optional
+from dataclasses import dataclass
 import numpy as np
+from transformers import PreTrainedTokenizerBase, DonutProcessor
+from transformers.data.data_collator import DataCollatorMixin
+from transformers.utils import PaddingStrategy
 
 
 def json2token(obj:Any, sort_key: bool=True):
@@ -80,9 +84,9 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
 
 def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
     # expand_vocab_set = set()
-    expand_vocab = ["<s_gt_parse>", "</s_gt_parse>", "<s_text_sequence>", "</s_text_sequence>"]
+    #expand_vocab = ["<s_gt_parse>", "</s_gt_parse>", "<s_text_sequence>", "</s_text_sequence>"]
     target_sequence = [json2token(json.loads(v), sort_key=sort_key) for v in rows["ground_truth"]]
-    tojson = token2json(target_sequence[1], expand_vocab=expand_vocab)
+    #tojson = token2json(target_sequence[1], expand_vocab=expand_vocab)
     labels = processor.tokenizer(
         target_sequence,
         add_special_tokens=False,
