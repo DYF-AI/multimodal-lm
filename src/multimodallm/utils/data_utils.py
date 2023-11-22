@@ -83,7 +83,7 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
 
 
 def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
-    target_sequence = [json2token(json.loads(v), sort_key=sort_key) for v in rows["ground_truth"]]
+    target_sequence = [json2token(json.loads(v), sort_key=sort_key)+processor.tokenizer.eos_token for v in rows["ground_truth"]]
     labels = processor.tokenizer(
         target_sequence,
         add_special_tokens=False,

@@ -1,5 +1,6 @@
 import difflib
 import os
+import json
 from dataclasses import dataclass
 from typing import Union, Optional, Dict, Tuple, List, Any
 import re
@@ -132,12 +133,12 @@ class CustomDonutModelHFTrainer:
 
 class SaveModelCallback(Callback):
     def __init__(self, save_model_path):
-        self.best_val_metric = 100
+        self.best_val_metric = -100
         self.model_model_path = save_model_path
     def on_train_epoch_end(self, trainer, pl_module):
         print(f"Pushing model to the hub, epoch {trainer.current_epoch}")
-        if trainer.callback_metrics['val_metric'] < self.best_val_metric:
-            print(f"save current best model: epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}")
+        if trainer.callback_metrics['val_metric'] > self.best_val_metric:
+            print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
             model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
             #model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}"
             if not os.path.exists(model_save_path):
@@ -149,15 +150,28 @@ class SaveModelCallback(Callback):
             self.best_val_metric = trainer.callback_metrics['val_metric']
 
     def on_train_end(self, trainer, pl_module):
-        print(f"Pushing model to the hub after training")
+        """训练结束前,再保存一次"""
+        print(f"\nPushing model to the hub after training")
         # pl_module.processor.push_to_hub("nielsr/donut-demo", commit_message=f"Training done")
         #model_save_path = f"{self.model_model_path}/epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}"
-        model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
+        model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
         if not os.path.exists(model_save_path):
             os.makedirs(model_save_path)
         pl_module.processor.save_pretrained(model_save_path, commit_message=f"Training done")
         pl_module.model.save_pretrained(model_save_path, commit_message=f"Training done")
 
+    #def on_validation_epoch_end(self, trainer, pl_module):
+    def on_validation_end(self, trainer, pl_module):
+        """Called when the val epoch ends."""
+        if trainer.callback_metrics['val_metric'] > self.best_val_metric:
+            print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
+            print(f"Pushing model to the hub after validation")
+            model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
+            if not os.path.exists(model_save_path):
+                os.makedirs(model_save_path)
+            pl_module.processor.save_pretrained(model_save_path, commit_message=f"validation done")
+            pl_module.model.save_pretrained(model_save_path, commit_message=f"validation done")
+            self.best_val_metric = trainer.callback_metrics['avg_val_metric']
 class CustomDonutModelPLTrainer(pl.LightningModule):
     """
         pytorch-lightning trainer
@@ -177,12 +191,18 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
         self.model_val_dataloader = model_val_dataloader
         self.max_length = max_length
         self.validation_step_outputs = []
+        self.total_train_loss = 0
+        self.total_train_step = 0
+        self.val_metric_in_validation = 0
+        self.val_metric_nums = 0
 
     def training_step(self, batch, batch_idx):
         ids, pixel_values, angles, ground_truths, labels, targets, _ = batch
         outputs = self.model(pixel_values, labels=labels)
         loss = outputs.loss
-        self.log_dict({"train_loss": loss}, sync_dist=True)
+        self.total_train_loss += loss
+        self.total_train_step += 1
+        self.log_dict({"train_loss": loss, "avg_train_loss": self.total_train_loss/(self.total_train_step+0.001)}, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx, dataset_idx=0):
@@ -207,15 +227,20 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
             predictions.append(seq)
 
         scores = list()
-        for pred, answer in zip(predictions, ground_truths):
+        for id, pred, answer in zip(ids, predictions, ground_truths):
             pred = re.sub(r"(?:(?<=>) | (?=</s_))", "", pred)
+            pred = json.dumps(self.processor.token2json(pred), ensure_ascii=False) # ground_truths是json
             # NOT NEEDED ANYMORE
             # answer = re.sub(r"<.*?>", "", answer, count=1)
             answer = answer.replace(self.processor.tokenizer.eos_token, "")
-            scores.append(edit_distance(pred, answer) / max(len(pred), len(answer)))
-
+            norm_ed = 1-(edit_distance(pred, answer) / max(len(pred), len(answer)))
+            scores.append(norm_ed)
+            self.val_metric_in_validation += norm_ed
+            self.val_metric_nums += 1
+            #self.log_dict({"avg_val_metric": self.val_metric_in_validation/(self.val_metric_nums)}, sync_dist=True)
             if self.config.get("verbose", False) and len(scores) == 1:
-                print(f"\nPrediction: {self.processor.token2json(pred)}")
+                print(f"\nid:{id}")
+                print(f"Prediction: {self.processor.token2json(pred)}")
                 print(f"    Answer: {self.processor.token2json(answer)}")
                 print(f" Normed ED: {scores[0]}")
         self.validation_step_outputs.append(scores)
@@ -239,7 +264,32 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
             val_metric_name = f"val_metric_{i}th_dataset"
             self.log_dict({val_metric_name: val_metric[i]}, sync_dist=True)
         self.log_dict({"val_metric": np.sum(total_metric) / np.sum(cnt)}, sync_dist=True)
+        self.log_dict({"avg_val_metric": self.val_metric_in_validation / (self.val_metric_nums)}, sync_dist=True)
         self.validation_step_outputs.clear()
+        self.val_metric_in_validation = 0
+        self.val_metric_nums = 0
+
+    # def on_validation_end(self):
+    #     # I set this to 1 manually
+    #     # (previously set to len(self.config.dataset_name_or_paths))
+    #     num_of_loaders = 1
+    #     if num_of_loaders == 1:
+    #         self.validation_step_outputs = [self.validation_step_outputs]
+    #     assert len(self.validation_step_outputs) == num_of_loaders
+    #     cnt = [0] * num_of_loaders
+    #     total_metric = [0] * num_of_loaders
+    #     val_metric = [0] * num_of_loaders
+    #     for i, results in enumerate(self.validation_step_outputs):
+    #         for scores in results:
+    #             cnt[i] += len(scores)
+    #             total_metric[i] += np.sum(scores)
+    #         val_metric[i] = total_metric[i] / cnt[i]
+    #         val_metric_name = f"val_metric_{i}th_dataset"
+    #         self.log_dict({val_metric_name: val_metric[i]}, sync_dist=True)
+    #     self.log_dict({"val_metric": np.sum(total_metric) / np.sum(cnt)}, sync_dist=True)
+    #     self.validation_step_outputs.clear()
+    #     self.val_metric_in_validation = 0
+    #     self.self.val_metric_nums = 0
 
     def configure_optimizers(self):
         # TODO add scheduler

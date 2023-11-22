@@ -3,6 +3,7 @@ import re
 import numpy as np
 from typing import Any
 
+from multimodallm.utils.data_utils import json2token, token2json
 
 # def json2token(obj:Any, sort_key: bool=True):
 #     if isinstance(obj, list):
