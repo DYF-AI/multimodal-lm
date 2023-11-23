@@ -200,7 +200,9 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
         ids, pixel_values, angles, ground_truths, labels, targets, _ = batch
         outputs = self.model(pixel_values, labels=labels)
         loss = outputs.loss
-        self.total_train_loss += loss
+        # 如果不加item(),内存空间会越来越小
+        # RuntimeError: [enforce fail at C:\cb\pytorch_1000000000000\work\c10\core\impl\alloc_cpu.cpp:81] data. DefaultCPUAllocator: not enough memory: you tried to allocate 4194304 bytes.
+        self.total_train_loss += loss.item()
         self.total_train_step += 1
         self.log_dict({"train_loss": loss, "avg_train_loss": self.total_train_loss/(self.total_train_step+0.001)}, sync_dist=True)
         return loss
@@ -241,7 +243,7 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
             if self.config.get("verbose", False) and len(scores) == 1:
                 print(f"\nid:{id}")
                 print(f"Prediction: {self.processor.token2json(pred)}")
-                print(f"    Answer: {self.processor.token2json(answer)}")
+                print(f"Answer: {self.processor.token2json(answer)}")
                 print(f" Normed ED: {scores[0]}")
         self.validation_step_outputs.append(scores)
         return scores

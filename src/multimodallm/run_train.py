@@ -12,8 +12,8 @@ import pytorch_lightning as pl
 from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTrainer, SaveModelCallback
 from multimodallm.utils.data_utils import preprocess
 
-os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
-os.environ["WANDB_MODE"] = "offline"
+# os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
+# os.environ["WANDB_MODE"] = "offline"
 
 if __name__ == "__main__":
     # 927e1a602dfef7063ed62c26589b2cd5f8dd189f
