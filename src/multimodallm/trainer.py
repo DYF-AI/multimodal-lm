@@ -132,15 +132,17 @@ class CustomDonutModelHFTrainer:
 
 
 class SaveModelCallback(Callback):
-    def __init__(self, save_model_path):
+    def __init__(self,
+                 save_model_path,
+                 save_all_validation_ckpt=True):
         self.best_val_metric = -100
         self.model_model_path = save_model_path
+        self.save_all_validation_ckpt = save_all_validation_ckpt
     def on_train_epoch_end(self, trainer, pl_module):
         print(f"Pushing model to the hub, epoch {trainer.current_epoch}")
+        model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
             print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
-            model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
-            #model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}"
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
             pl_module.processor.save_pretrained(model_save_path,
@@ -148,6 +150,16 @@ class SaveModelCallback(Callback):
             pl_module.model.save_pretrained(model_save_path,
                                             commit_message=f"Training in progress, epoch {trainer.current_epoch}")
             self.best_val_metric = trainer.callback_metrics['val_metric']
+        elif self.save_all_validation_ckpt:
+            print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
+            if not os.path.exists(model_save_path):
+                os.makedirs(model_save_path)
+            pl_module.processor.save_pretrained(model_save_path,
+                                                commit_message=f"Training in progress, epoch {trainer.current_epoch}")
+            pl_module.model.save_pretrained(model_save_path,
+                                            commit_message=f"Training in progress, epoch {trainer.current_epoch}")
+            self.best_val_metric = trainer.callback_metrics['val_metric']
+
 
     def on_train_end(self, trainer, pl_module):
         """训练结束前,再保存一次"""
@@ -163,15 +175,24 @@ class SaveModelCallback(Callback):
     #def on_validation_epoch_end(self, trainer, pl_module):
     def on_validation_end(self, trainer, pl_module):
         """Called when the val epoch ends."""
+        model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
             print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
             print(f"Pushing model to the hub after validation")
-            model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
             pl_module.processor.save_pretrained(model_save_path, commit_message=f"validation done")
             pl_module.model.save_pretrained(model_save_path, commit_message=f"validation done")
             self.best_val_metric = trainer.callback_metrics['avg_val_metric']
+        elif self.save_all_validation_ckpt:
+            print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
+            print(f"Pushing model to the hub after validation")
+            if not os.path.exists(model_save_path):
+                os.makedirs(model_save_path)
+            pl_module.processor.save_pretrained(model_save_path, commit_message=f"validation done")
+            pl_module.model.save_pretrained(model_save_path, commit_message=f"validation done")
+            self.best_val_metric = trainer.callback_metrics['avg_val_metric']
+
 class CustomDonutModelPLTrainer(pl.LightningModule):
     """
         pytorch-lightning trainer

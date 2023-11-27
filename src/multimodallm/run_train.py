@@ -21,7 +21,8 @@ if __name__ == "__main__":
     all_train_config = {
         # 预训练
         "ocr_pretrain": {
-            "MP": r"J:\model\pretrained-model\torch\donut-base-expand-vocab",
+            #"MP": r"J:\model\pretrained-model\torch\donut-base-expand-vocab",
+            "MP": r"J:\model\mllm-model\donut-pretrain\20231123\pl-checkpoint-29000-ned-0.7700328264396815",
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
