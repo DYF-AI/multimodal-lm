@@ -140,6 +140,7 @@ class SaveModelCallback(Callback):
         self.save_all_validation_ckpt = save_all_validation_ckpt
     def on_train_epoch_end(self, trainer, pl_module):
         print(f"Pushing model to the hub, epoch {trainer.current_epoch}")
+        print(f"save mode: {self.save_all_validation_ckpt}")
         model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
             print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
@@ -175,6 +176,7 @@ class SaveModelCallback(Callback):
     #def on_validation_epoch_end(self, trainer, pl_module):
     def on_validation_end(self, trainer, pl_module):
         """Called when the val epoch ends."""
+        print(f"save mode: {self.save_all_validation_ckpt}")
         model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
             print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")

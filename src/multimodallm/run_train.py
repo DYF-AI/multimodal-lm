@@ -22,7 +22,9 @@ if __name__ == "__main__":
         # 预训练
         "ocr_pretrain": {
             #"MP": r"J:\model\pretrained-model\torch\donut-base-expand-vocab",
-            "MP": r"J:\model\mllm-model\donut-pretrain\20231123\pl-checkpoint-29000-ned-0.7700328264396815",
+            #"MP": r"J:\model\mllm-model\donut-pretrain\20231124\pl-checkpoint-14500-ned-0.8225900701319295",
+            "MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493"
+                  r"",
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",

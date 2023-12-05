@@ -83,6 +83,8 @@ def processing_meta_data(data_root: str, save_meta_data: str):
                 file_id, ocr_res = sample.strip().split("\t")
                 absolute_image_path = os.path.join(image_root, file_id).replace("\\", "/")
                 relative_image_path = absolute_image_path.split("/", 3)[3]
+                if not os.path.isfile(absolute_image_path):
+                    continue
                 meta_data["图片绝对路径"].append(absolute_image_path)
                 meta_data["图片相对路径"].append(relative_image_path)
                 picInfo = PicInfo.from_ocr_res(adapte_ocr_data(ocr_res, file_id))
@@ -117,6 +119,8 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
         print(index)
         file_name, usage = row["图片相对路径"], row["用途"]
         usage =  row["用途"]
+        if not os.path.isfile(row["图片绝对路径"]):
+            continue
         record = {
             "id": file_name,
             "image": row["图片绝对路径"],
@@ -142,7 +146,7 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
 if __name__ == "__main__":
     data_root = r"J:\data\mllm-data\mllm-pretrain-data"
     save_meta_data = "J:\data\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"
-    gen_meta_data, gen_arrow_data = False, True
+    gen_meta_data, gen_arrow_data = True, True
     if gen_meta_data:
         processing_meta_data(data_root, save_meta_data)
 

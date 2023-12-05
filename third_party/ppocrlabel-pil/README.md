@@ -112,4 +112,166 @@ AttributeError: 'Namespace' object has no attribute 'return_word_box'
   ```python
   # extended function
     parser.add_argument("--return_word_box", type=str2bool, default=False, help='Whether return the bbox of each word (split by space) or chinese character. Only used in ppstructure for layout recovery')
+  ```
+
+#### 打包成exe
+
+```shell
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil>pyinstaller --onefile PPOCRLabel.py
 ```
+
+bug1:
+报错:
+```shell
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil\dist>PPOCRLabel.exe
+Traceback (most recent call last):
+  File "paddle\fluid\ir.py", line 24, in <module>
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddle\fluid\proto\pass_desc_pb2.py", line 16, in <module>
+ModuleNotFoundError: No module named 'framework_pb2
+```
+
+解决:
+```python
+# 安装存在问题, 有些文件夹前面是~， 类似下面的警告， 重装paddle
+# WARNING: Ignoring invalid distribution -pocrlabel (d:\programdata\anaconda3\envs\paddle\lib\site-packages)
+D:\ProgramData\Anaconda3\envs\paddle\Lib\site-packages\paddle\fluid\~roto
+
+
+# 修改：D:\ProgramData\Anaconda3\envs\paddle\Lib\site-packages\paddle\fluid\proto\pass_desc_pb2.py, 可解决bug1
+# import framework_pb2 as framework__pb2
+import paddle.fluid.proto.framework_pb2 as framework__pb2
+```
+
+bug2：
+报错:
+```shell
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil\dist>PPOCRLabel.exe
+Traceback (most recent call last):
+  File "ppocrlabel-pil\PPOCRLabel.py", line 41, in <module>
+    from paddleocr import PaddleOCR, PPStructure
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddleocr\__init__.py", line 14, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddleocr\paddleocr.py", line 21, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddle\__init__.py", line 71, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddle\dataset\__init__.py", line 27, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddle\dataset\flowers.py", line 39, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddle\dataset\image.py", line 48, in <module>
+  File "subprocess.py", line 858, in __init__
+  File "subprocess.py", line 1311, in _execute_child
+FileNotFoundError: [WinError 2] 系统找不到指定的文件。
+[35992] Failed to execute script 'PPOCRLabel' due to unhandled exception
+```
+
+解决:
+https://github.com/PaddlePaddle/PaddleOCR/issues/5326
+```python
+# FIXME(minqiyang): this is an ugly fix for the numpy bug reported here
+# https://github.com/numpy/numpy/issues/12497
+if six.PY3:
+    import subprocess
+    import sys
+    import os
+    interpreter = sys.executable
+    # Note(zhouwei): if use Python/C 'PyRun_SimpleString', 'sys.executable'
+    # will be the C++ execubable on Windows
+    if sys.platform == 'win32' and 'python.exe' not in interpreter:
+        interpreter = sys.exec_prefix + os.sep + 'python.exe'
+    import_cv2_proc = subprocess.Popen(
+        [interpreter, "-c", "import cv2"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    out, err = import_cv2_proc.communicate()
+    retcode = import_cv2_proc.poll()
+    if retcode != 0:
+        cv2 = None
+    else:
+        import cv2
+else:
+    try:
+        import cv2
+    except ImportError:
+        cv2 = None
+
+# 改为
+try:
+    import cv2
+except:
+    cv2 = None
+```
+
+
+bug3:
+```shell
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil\dist>PPOCRLabel.exe
+Traceback (most recent call last):
+  File "ppocrlabel-pil\PPOCRLabel.py", line 41, in <module>
+    from paddleocr import PaddleOCR, PPStructure
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddleocr\__init__.py", line 14, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 419, in exec_module
+  File "paddleocr\paddleocr.py", line 43, in <module>
+  File "paddleocr\paddleocr.py", line 37, in _import_file
+  File "<frozen importlib._bootstrap_external>", line 839, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 975, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1032, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\21702\\AppData\\Local\\Temp\\_MEI271362\\paddleocr\\tools/__init__.py'
+[7336] Failed to execute script 'PPOCRLabel' due to unhandled exception!
+```
+解决:
+```shell
+# --collect-all  paddleocr 不再包paddleocr的错
+pyinstaller --onefile --collect-all  paddleocr PPOCRLabel.py
+
+# 尝试-F
+pyinstaller -F PPOCRLabel.py
+
+# --collect-all 可以通过加 ，但治标不治本
+pyinstaller --onefile --collect-all paddleocr --collect-all pyclipper   --collect-all imghdr PPOCRLabel.py
+
+# https://blog.csdn.net/weixin_44458631/article/details/115290619
+# https://blog.csdn.net/chang1976272446/article/details/119824048
+
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil>
+pyinstaller --onefile --collect-all paddleocr --collect-all pyclipper  --collect-all imghdr --collect-all skimage --collect-all imgaug --hidden-import scipy.io --collect-all lmdb --hidden-import PyQt5.Qt --hidden-import  PyQt5.QtCore --hidden-import PyQt5.QtGui --hidden-import PyQt5.QtWidgets PPOCRLabel.py
+```
+
+bug4:
+```shell
+(paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil\dist>PPOCRLabel.exe
+Traceback (most recent call last):
+  File "ppocrlabel-pil\PPOCRLabel.py", line 28, in <module>
+ImportError: DLL load failed while importing QtCore: 找不到指定的程序。
+[35384] Failed to execute script 'PPOCRLabel' due to unhandled exception!
+```
+解决：
+https://blog.csdn.net/lxh19920114/article/details/103819279

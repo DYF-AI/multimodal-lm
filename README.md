@@ -13,3 +13,13 @@
 #### 发票信息抽取
 #### 证件类抽取任务
 #### 卷面评分系统
+
+
+
+## bug
+```shell
+ File "D:\ProgramData\Anaconda3\envs\torch\lib\site-packages\PIL\Image.py", line 3092, in open
+    fp = builtins.open(filename, "rb")
+PermissionError: [Errno 13] Permission denied: 'J:/data/mllm-data/mllm-pretrain-data/train/'
+# https://stackoom.com/question/485f5
+```
