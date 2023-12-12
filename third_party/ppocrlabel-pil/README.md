@@ -263,6 +263,7 @@ pyinstaller --onefile --collect-all paddleocr --collect-all pyclipper   --collec
 
 (paddle) G:\dongyongfei786\multimodal-lm\third_party\ppocrlabel-pil>
 pyinstaller --onefile --collect-all paddleocr --collect-all pyclipper  --collect-all imghdr --collect-all skimage --collect-all imgaug --hidden-import scipy.io --collect-all lmdb --hidden-import PyQt5.Qt --hidden-import  PyQt5.QtCore --hidden-import PyQt5.QtGui --hidden-import PyQt5.QtWidgets PPOCRLabel.py
+
 ```
 
 bug4:
@@ -274,4 +275,6 @@ ImportError: DLL load failed while importing QtCore: 找不到指定的程序。
 [35384] Failed to execute script 'PPOCRLabel' due to unhandled exception!
 ```
 解决：
-https://blog.csdn.net/lxh19920114/article/details/103819279
+https://zhuanlan.zhihu.com/p/524637688   pyqt5和pyqt5-qt5两个版本不一致
+安装：pip install PyQt5-tools==5.15.2.3
+依旧不行
