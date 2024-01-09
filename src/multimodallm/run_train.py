@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import datetime
 import datasets
@@ -9,6 +10,9 @@ from torch.utils.data import DataLoader
 from transformers import VisionEncoderDecoderConfig, DonutProcessor, VisionEncoderDecoderModel, GenerationConfig, \
     Seq2SeqTrainingArguments
 import pytorch_lightning as pl
+
+sys.path.append("../")
+
 from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTrainer, SaveModelCallback
 from multimodallm.utils.data_utils import preprocess
 
@@ -23,8 +27,8 @@ if __name__ == "__main__":
         "ocr_pretrain": {
             #"MP": r"J:\model\pretrained-model\torch\donut-base-expand-vocab",
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231124\pl-checkpoint-14500-ned-0.8225900701319295",
-            "MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493"
-                  r"",
+            #"MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493",
+            "MP": r"J:\model\mllm-model\donut-pretrain\20231130\pl-checkpoint-333500-ned-0.8506012274240629",
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
