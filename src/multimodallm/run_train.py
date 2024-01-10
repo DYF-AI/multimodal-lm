@@ -5,6 +5,7 @@ import random
 import datetime
 import datasets
 import torch
+from PIL import Image
 torch.set_float32_matmul_precision('medium') # You are using a CUDA device ('NVIDIA GeForce RTX 4060 Ti') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance.
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping
@@ -36,7 +37,7 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493",
             "MP": r"J:\model\mllm-model\donut-pretrain\20231130\pl-checkpoint-333500-ned-0.8506012274240629",
             #"MP": r"J:\model\mllm-model\donut-large",
-            "use_huggingface_trainer": True,
+            "use_huggingface_trainer": False,
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
@@ -217,7 +218,8 @@ if __name__ == "__main__":
             ids, images, angles, ground_truths, labels, targets, random_paddings = [], [], [], [], [], [], []
             for sample in batch:
                 ids.append(sample["id"])
-                images.append(sample["image"].convert("RGB"))
+                # images.append(sample["image"].convert("RGB"))
+                images.append(Image.open(sample["image"]).convert("RGB"))
                 angles.append(sample["angle"])
                 ground_truths.append(sample["ground_truth"])
                 labels.append(sample["labels"])

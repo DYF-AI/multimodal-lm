@@ -8,8 +8,8 @@ from transformers import PreTrainedTokenizerBase, DonutProcessor
 from transformers.data.data_collator import DataCollatorMixin
 from transformers.utils import PaddingStrategy
 import sys
-def trans_platform(path):
-    new_path = path.replace("\\", "/").replace("J:/", "/mnt/j/")
+def trans_platform(path, win="J:/", linux="/mnt/j/"):
+    new_path = path.replace("\\", "/").replace(win, linux)
     return new_path
 
 platform = sys.platform
