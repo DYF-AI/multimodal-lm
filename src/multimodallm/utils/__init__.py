@@ -2,7 +2,8 @@
 import re
 import numpy as np
 from typing import Any
-
+import sys
+sys.path.append("../../")
 from multimodallm.utils.data_utils import json2token, token2json
 
 

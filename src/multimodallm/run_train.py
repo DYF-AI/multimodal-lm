@@ -1,27 +1,33 @@
 import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 import sys
 import random
 import datetime
 import datasets
 import torch
+torch.set_float32_matmul_precision('medium') # You are using a CUDA device ('NVIDIA GeForce RTX 4060 Ti') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance.
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping
 from torch.utils.data import DataLoader
 from transformers import VisionEncoderDecoderConfig, DonutProcessor, VisionEncoderDecoderModel, GenerationConfig, \
-    Seq2SeqTrainingArguments
+    Seq2SeqTrainingArguments, MBartModel
 import pytorch_lightning as pl
 
 sys.path.append("../")
 
 from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTrainer, SaveModelCallback
 from multimodallm.utils.data_utils import preprocess
+from multimodallm.utils.data_utils import trans_platform
 
-# os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
-# os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
+os.environ["WANDB_MODE"] = "offline"
+
+platform = sys.platform
 
 if __name__ == "__main__":
     # 927e1a602dfef7063ed62c26589b2cd5f8dd189f
     date = datetime.datetime.now()
+    debug_mode = True
     all_train_config = {
         # 预训练
         "ocr_pretrain": {
@@ -29,6 +35,8 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231124\pl-checkpoint-14500-ned-0.8225900701319295",
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493",
             "MP": r"J:\model\mllm-model\donut-pretrain\20231130\pl-checkpoint-333500-ned-0.8506012274240629",
+            #"MP": r"J:\model\mllm-model\donut-large",
+            "use_huggingface_trainer": True,
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
@@ -52,6 +60,7 @@ if __name__ == "__main__":
         "train_ticket": {
             "MP": r"J:\model\pretrained-model\torch\donut-base",
             #"MP": r"J:\model\mllm-model\train_ticket\checkpoint-760",
+            "use_huggingface_trainer": False,
             "num_epoch": 20,
             "max_length": 768,
             "start_token": "<s_trainticket>",
@@ -76,12 +85,21 @@ if __name__ == "__main__":
             "val_num": 200,
             "patience": 5,
         },
-
     }
 
     task_name = "ocr_pretrain"#"train_ticket" #"ocr_pretrain"
     wandb_logger = WandbLogger(project="donut-model", name=task_name)
     random.seed(all_train_config[task_name]["seed"])
+
+
+    if platform == "linux":
+        all_train_config[task_name]["MP"] = trans_platform(all_train_config[task_name]["MP"])
+        all_train_config[task_name]["train_dataset"] = trans_platform(all_train_config[task_name]["train_dataset"])
+        all_train_config[task_name]["validation_dataset"] = trans_platform(all_train_config[task_name]["validation_dataset"])
+        all_train_config[task_name]["test_dataset"] = trans_platform(all_train_config[task_name]["test_dataset"])
+        all_train_config[task_name]["model_save_path"] = trans_platform(all_train_config[task_name]["model_save_path"])
+    print(f"config:{all_train_config[task_name]}")
+
     # 扩展词表的donut-base
     #MP = r"J:\model\pretrained-model\torch\donut-base-expand-vocab"
     # 需要统计以下训练集的长度
@@ -120,10 +138,11 @@ if __name__ == "__main__":
     test_dataset = all_train_config[task_name]["validation_dataset"]
 
     #train_key, validation_key, test_key = "train", "validation", "test"
-    DP = r"J:\data\mllm-data\mllm-pretrain-data"
+    # DP = r"J:\data\mllm-data\mllm-pretrain-data"
     en_ds = {}
     for dataset_path in [train_dataset, validation_dataset, test_dataset]:
-        dataset = datasets.Dataset.from_file(dataset_path)#.select(range(10))
+        dataset = datasets.Dataset.from_file(dataset_path).select(range(1000)) \
+            if debug_mode else datasets.Dataset.from_file(dataset_path)
         key = os.path.basename(dataset_path).split(".")[0]
         if "_cache" in key: key = key.replace("_cache", "")
         # "eager":True, 缓存图片数据到内存，但是非常耗内存
@@ -139,8 +158,7 @@ if __name__ == "__main__":
     print(en_ds)
     print(en_ds["train"][0])
 
-
-    use_huggingface_trainer = False
+    use_huggingface_trainer = all_train_config[task_name]["use_huggingface_trainer"]
     """
         lighting-trainer在evalution的速度远远快于huggingface-trainer的速度, 原因带排查
         初步原因：huggingface有计算val_loss, 进行了两次forward? lightning只是算val_metric?

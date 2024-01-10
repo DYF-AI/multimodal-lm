@@ -3,6 +3,7 @@ from typing import Union, Optional
 
 import numpy as np
 import torch
+from PIL import Image
 from transformers import DonutProcessor, PreTrainedTokenizerBase
 from transformers.data.data_collator import DataCollatorMixin
 from transformers.utils import PaddingStrategy
@@ -28,7 +29,8 @@ class DataCollatorForGeneration(DataCollatorMixin):
         else:
             image_list = list()
             for feature in features:
-                image = feature["image"].convert("RGB")
+                #image = feature["image"].convert("RGB")
+                image = Image.open(feature["image"]).convert("RGB")
                 angle = feature["angle"]
                 if angle:
                     image = image.rotate(360 - angle)

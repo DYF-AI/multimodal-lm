@@ -101,7 +101,7 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
     dataset_features = datasets.Features(
         {
             "id": datasets.Value("string"),
-            "image": datasets.features.Image(),  # 路径
+            "image": datasets.Value("string"), #datasets.features.Image(),  # 该为string, 支持win和linux平台
             "angle": datasets.Value("float"),
             #"ocr_box": datasets.Value("string"),
             "ground_truth": datasets.Value("string"),   # ocr
@@ -115,7 +115,7 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
     test_writer = ArrowWriter(features=dataset_features, path=test_arrow_path)
     df = pd.read_csv(meta_data_file)
     print(df)
-    for index, row in df.iterrows():
+    for index, row in tqdm(df.iterrows()):
         print(index)
         file_name, usage = row["图片相对路径"], row["用途"]
         usage =  row["用途"]
@@ -146,7 +146,7 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
 if __name__ == "__main__":
     data_root = r"J:\data\mllm-data\mllm-pretrain-data"
     save_meta_data = "J:\data\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"
-    gen_meta_data, gen_arrow_data = True, True
+    gen_meta_data, gen_arrow_data = False, True
     if gen_meta_data:
         processing_meta_data(data_root, save_meta_data)
 

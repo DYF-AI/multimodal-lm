@@ -7,8 +7,12 @@ import numpy as np
 from transformers import PreTrainedTokenizerBase, DonutProcessor
 from transformers.data.data_collator import DataCollatorMixin
 from transformers.utils import PaddingStrategy
+import sys
+def trans_platform(path):
+    new_path = path.replace("\\", "/").replace("J:/", "/mnt/j/")
+    return new_path
 
-
+platform = sys.platform
 def json2token(obj:Any, sort_key: bool=True):
     if isinstance(obj, list):
         return r"<sep/>".join([json2token(v, sort_key) for v in obj])
@@ -84,6 +88,11 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
 
 def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
     target_sequence = [json2token(json.loads(v), sort_key=sort_key)+processor.tokenizer.eos_token for v in rows["ground_truth"]]
+    if platform == "linux":
+        image = [trans_platform(v) for v in rows["image"]]
+        rows["image"] = image
+
+
     labels = processor.tokenizer(
         target_sequence,
         add_special_tokens=False,
