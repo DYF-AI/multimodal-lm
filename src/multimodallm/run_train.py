@@ -20,8 +20,8 @@ from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTr
 from multimodallm.utils.data_utils import preprocess
 from multimodallm.utils.data_utils import trans_platform
 
-# os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
-# os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
+os.environ["WANDB_MODE"] = "offline"
 
 platform = sys.platform
 
@@ -37,7 +37,9 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231128\pl-checkpoint-43500-ned-0.824306771629493",
             #"MP": r"J:\model\mllm-model\donut-pretrain\20231130\pl-checkpoint-333500-ned-0.8506012274240629",
             #"MP": r"J:\model\mllm-model\donut-large",
-            "MP": r"J:\model\mllm-model\donut-large-pretrain\20240111\pl-checkpoint-10875-ned-0.6646099732695305",
+            #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240111\pl-checkpoint-10875-ned-0.6646099732695305",
+            #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240115\pl-checkpoint-10875-ned-0.7835185623629602",
+            "MP": r"J:\model\mllm-model\donut-large-pretrain\20240118\pl-checkpoint-3625-ned-0.8024234214089616",
             "freeze_encoder": True,
             "use_huggingface_trainer": False,
             "num_epoch":20,

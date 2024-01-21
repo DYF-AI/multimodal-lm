@@ -58,7 +58,23 @@ def get_norm_field(field):
             "score": field["extra"]["normalize_score"]
         }
 
-
+def norm_field(field, field_type):
+    if field is None or field == "" or field == "无":
+        return None
+    if field_type == "date":
+        return parse_data_str(field)
+    elif field_type == "float":
+        try:
+            return float(field) if field is not None else None
+        except ValueError:
+            return None
+    elif field_type == "int":
+        try:
+            return int(field) if field is not None else None
+        except ValueError:
+            return None
+    else:
+        return field
 def get_list_field(fields, is_norm=False):
     fields = [get_norm_field(v) if is_norm else get_field(v) for v in fields]
     return [v for v in fields if v is not None]
@@ -233,4 +249,7 @@ def format_date(value):
         return "###".join([format_date(v) for v in value.split("###")])
     return datetime.strptime(value, "%Y.%m.%d").strftime("%Y年%m月%d日")
 
+
+def clean_chn_eng_num(value):
+    return re.sub(r"[^\u4e00-\u9fa5aa-zA-Z0-9]", "", value)
 
