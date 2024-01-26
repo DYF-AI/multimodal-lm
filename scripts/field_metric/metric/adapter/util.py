@@ -171,25 +171,6 @@ def clean_data_str(date_str):
     return new_date_str
 
 
-def norm_field(field, field_type):
-    if field is None or field == "" or field == "无":
-        return None
-    if field_type == "date":
-        return parse_data_str(field)
-    elif field_type == "float":
-        try:
-            return float(field) if field is not None else None
-        except ValueError:
-            return None
-    elif field_type == "int":
-        try:
-            return int(field) if field is not None else None
-        except ValueError:
-            return None
-    else:
-        return field
-
-
 def inspct_item_type(item):
     if isinstance(item, float):
         return "float"

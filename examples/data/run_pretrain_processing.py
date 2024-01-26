@@ -144,9 +144,9 @@ def processing_arrow_data(meta_data_file:str, save_arrow_row:str):
 
 
 if __name__ == "__main__":
-    data_root = r"J:\data\mllm-data\mllm-pretrain-data"
-    save_meta_data = "J:\data\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"
-    gen_meta_data, gen_arrow_data = False, True
+    data_root = r"J:\dataset\mllm-data\mllm-pretrain-data"
+    save_meta_data = "J:\dataset\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"
+    gen_meta_data, gen_arrow_data = True, True
     if gen_meta_data:
         processing_meta_data(data_root, save_meta_data)
 

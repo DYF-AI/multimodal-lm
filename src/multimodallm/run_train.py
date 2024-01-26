@@ -20,8 +20,8 @@ from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTr
 from multimodallm.utils.data_utils import preprocess
 from multimodallm.utils.data_utils import trans_platform
 
-os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
-os.environ["WANDB_MODE"] = "offline"
+# os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
+# os.environ["WANDB_MODE"] = "offline"
 
 platform = sys.platform
 
@@ -39,17 +39,19 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-large",
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240111\pl-checkpoint-10875-ned-0.6646099732695305",
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240115\pl-checkpoint-10875-ned-0.7835185623629602",
-            "MP": r"J:\model\mllm-model\donut-large-pretrain\20240118\pl-checkpoint-3625-ned-0.8024234214089616",
-            "freeze_encoder": True,
+            #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240118\pl-checkpoint-3625-ned-0.8024234214089616",
+            #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240120\pl-checkpoint-3625-ned-0.8013155963470444",
+            "MP": r"J:\model\mllm-model\donut-large-pretrain\20240122\pl-checkpoint-3625-ned-0.7967201287113991",
+            "freeze_encoder": False,
             "use_huggingface_trainer": False,
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
             "image_size": [1024, 1024],
             "expand_vocab": ["<s_ocr_pretrain>", "</s_ocr_pretrain>", "<s_text_sequence>", "</s_text_sequence>"],
-            "train_dataset": r"J:\data\mllm-data\mllm-pretrain-data\train.arrow",
-            "validation_dataset":r"J:\data\mllm-data\mllm-pretrain-data\validation.arrow",
-            "test_dataset":r"J:\data\mllm-data\mllm-pretrain-data\test.arrow",
+            "train_dataset": r"J:\dataset\mllm-data\mllm-pretrain-data\train.arrow",
+            "validation_dataset":r"J:\dataset\mllm-data\mllm-pretrain-data\validation.arrow",
+            "test_dataset":r"J:\dataset\mllm-data\mllm-pretrain-data\test.arrow",
             "model_save_path": os.path.join(r"J:\model\mllm-model\donut-large-pretrain", date.strftime('%Y%m%d')),
             #"model_save_path": os.path.join(r"J:\model\mllm-model\donut-pretrain", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 2,
@@ -61,6 +63,7 @@ if __name__ == "__main__":
             "val_check_interval": 0.1,
             "seed": 2023,
             "val_num": 300,
+            "train_num": 100000, # 选择部分训练集训练
             "patience": 20,
         },
         # 火车票
@@ -250,9 +253,13 @@ if __name__ == "__main__":
             return ids, pixel_values, angles, ground_truths, torch.tensor(labels), targets, random_paddings
 
         val_num = all_train_config[task_name]["val_num"]
+        train_num = all_train_config[task_name]["train_num"] \
+            if "train_num" in all_train_config[task_name] else len(en_ds["train"])
+
+        train_dataset_select = en_ds["train"].select(random.sample(range(len(en_ds["train"])), train_num))
         en_val_dataset = en_ds["validation"].select(random.sample(range(len(en_ds["validation"])),  val_num)) \
             if "validation" in en_ds else en_ds["test"].select(random.sample(range(len(en_ds["test"])), val_num))
-        train_dataloader = DataLoader(en_ds["train"],
+        train_dataloader = DataLoader(train_dataset_select,
                                       batch_size=all_train_config[task_name]["per_device_train_batch_size"],
                                       shuffle=True,
                                       collate_fn=lambda x: custom_collate(x, True),
