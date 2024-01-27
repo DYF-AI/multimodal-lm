@@ -123,3 +123,41 @@ def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=
         "labels": labels,
         "target": target_sequence
     }
+
+def preprocess_prompt(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
+    target_sequence = [json2token(json.loads(v), sort_key=sort_key)+processor.tokenizer.eos_token for v in rows["ground_truth"]]
+    if platform == "linux":
+        image = [trans_platform(v) for v in rows["image"]]
+        rows["image"] = image
+
+
+    labels = processor.tokenizer(
+        target_sequence,
+        add_special_tokens=False,
+        max_length=max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="np",
+    )["input_ids"]
+    # eager：缓存图片数据， 开启缓存需要大量内存
+    if not eager:
+        return {
+            "labels":labels,
+            "target": target_sequence,
+            "random_padding":[random_padding for _ in range(len(labels))]
+        }
+    image_list = rows["image"]
+    image_angle_list = []
+    for image, angle in zip(rows["image"], rows["angle"]):
+        if angle:
+            image = image.rotate(360-angle)
+            image_angle_list.append(image)
+    if len(image_angle_list) == len(image_list):
+        image_list = image_angle_list
+    pixel_values = processor(image_list, random_padding=random_padding, return_tensors="np").pixel_values
+
+    return {
+        "pixel_values": [np.array(v.shape, dtype=np.int32).tobytes() + v.tobytes() for v in pixel_values],
+        "labels": labels,
+        "target": target_sequence
+    }

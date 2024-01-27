@@ -13,7 +13,8 @@ from multimodallm.utils.image_utils import load_image
 dataset_features = datasets.Features(
     {
         "id": datasets.Value("string"),
-        "image": datasets.features.Image(),
+        #"image": datasets.features.Image(),
+        "image": datasets.Value("string"),
         "angle": datasets.Value("float"),
         "ground_truth": datasets.Value("string"),
     }
@@ -26,11 +27,11 @@ def generate_example(metadata_path:str, image_path:str):
             print(sample)
             file_name = sample["file_name"]
             image_file = os.path.join(image_path, file_name)
-            original_image, size = load_image(image_file, return_chw=False, return_bgr=False)
+            #original_image, size = load_image(image_file, return_chw=False, return_bgr=False)
             record = {
                 "id": file_name,
                 #"image": image_file,
-                "image": original_image,
+                "image": image_file,
                 "angle": sample.get("angle", 0),
                 "ground_truth": json.dumps(json.loads(sample["text"]), ensure_ascii=False)
             }

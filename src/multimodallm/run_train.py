@@ -20,8 +20,8 @@ from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTr
 from multimodallm.utils.data_utils import preprocess
 from multimodallm.utils.data_utils import trans_platform
 
-# os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
-# os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
+os.environ["WANDB_MODE"] = "offline"
 
 platform = sys.platform
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         "train_ticket": {
             "MP": r"J:\model\pretrained-model\torch\donut-base",
             #"MP": r"J:\model\mllm-model\train_ticket\checkpoint-760",
-            "use_huggingface_trainer": False,
+            "use_huggingface_trainer": True,
             "num_epoch": 20,
             "max_length": 768,
             "start_token": "<s_trainticket>",
@@ -80,11 +80,12 @@ if __name__ == "__main__":
                              "</s_starting_station>","<s_destination_station>", "</s_destination_station>",
                              "<s_seat_category>", "</s_seat_category>","<s_ticket_rates>", "</s_ticket_rates>",
                              "<s_ticket_num>", "</s_ticket_num>","<s_date>", "</s_date>", "<s_train_num>", "</s_train_num>",
+                             "<s_trainticket>",
                              ],
-            "train_dataset": r"J:\data\mllm-data\mllm-finetune-data\trainticket\train_cache.arrow",
-            "validation_dataset": r"J:\data\mllm-data\mllm-finetune-data\trainticket\test_cache.arrow",
-            "test_dataset": r"J:\data\mllm-data\mllm-finetune-data\trainticket\test_cache.arrow",
-            #"model_save_path": os.path.join(r"J:\model\mllm-model\train_ticket", date.strftime('%Y%m%d')),
+            "train_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\train_cache.arrow",
+            "validation_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\test_cache.arrow",
+            "test_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\test_cache.arrow",
+            "model_save_path": os.path.join(r"J:\model\mllm-model\train_ticket", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 1,
             "per_device_eval_batch_size": 1, # huggingface 调用了共享GPU内存?
             "gradient_accumulation_steps": 4, # 梯度累计速度会变慢很多？
@@ -99,7 +100,8 @@ if __name__ == "__main__":
     }
 
 
-    project, task_name = "donut-large-model", "ocr_pretrain"  #"train_ticket" #"ocr_pretrain"
+    #project, task_name = "donut-large-model", "ocr_pretrain"  #"train_ticket" #"ocr_pretrain"
+    project, task_name = "donut-finetune", "train_ticket"  #"train_ticket" #"ocr_pretrain"
     wandb_logger = WandbLogger(project=project, name=task_name)
     random.seed(all_train_config[task_name]["seed"])
     #base_name = os.path.basename(all_train_config[task_name]["MP"])
@@ -143,14 +145,14 @@ if __name__ == "__main__":
     print("Pad token ID:", processor.decode([model.config.pad_token_id]))
     print("Decoder start token ID:", processor.decode([model.config.decoder_start_token_id]))
 
-    if all_train_config[task_name]["freeze_encoder"]:
+    if all_train_config[task_name].get("freeze_encoder", None):
         # 基于donut-base训练donut-large 冻结编码器所有参数
         print("freeze_encoder")
         for param in model.encoder.parameters():
             param.requires_grad = False
 
     # gradient checkpointing
-    if model.supports_gradient_checkpointing and all_train_config[task_name]["gradient_checkpointing"]:
+    if model.supports_gradient_checkpointing and all_train_config[task_name].get("gradient_checkpointing", None):
         model.gradient_checkpointing_enable()
         print(f"Gradient Checkpointing: {model.is_gradient_checkpointing}")
 
