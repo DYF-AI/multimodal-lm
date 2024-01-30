@@ -1,4 +1,11 @@
 
+### 代码
+- run_train_v1.py
+    - dataset使用preprocess函数处理
+    - 不支持prompt训练
+- run_train_v2.py
+
+
 ### 数据处理
 1）图片来源：网上爬虫+书籍pdf   
 2）数据转换：将书籍pdf转为图片   

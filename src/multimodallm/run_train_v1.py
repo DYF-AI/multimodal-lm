@@ -1,4 +1,7 @@
 import os
+
+from multimodallm.collator.custom_collator import custom_collate
+
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 import sys
 import random
@@ -99,13 +102,10 @@ if __name__ == "__main__":
         },
     }
 
-
     #project, task_name = "donut-large-model", "ocr_pretrain"  #"train_ticket" #"ocr_pretrain"
     project, task_name = "donut-finetune", "train_ticket"  #"train_ticket" #"ocr_pretrain"
     wandb_logger = WandbLogger(project=project, name=task_name)
     random.seed(all_train_config[task_name]["seed"])
-    #base_name = os.path.basename(all_train_config[task_name]["MP"])
-    #all_train_config[task_name]["model_save_path"] = os.path.join(fr"J:\model\mllm-model\{base_name}_{task_name}", date.strftime('%Y%m%d')),
 
     if platform == "linux":
         all_train_config[task_name]["MP"] = trans_platform(all_train_config[task_name]["MP"])
@@ -163,8 +163,6 @@ if __name__ == "__main__":
     validation_dataset = all_train_config[task_name]["validation_dataset"]
     test_dataset = all_train_config[task_name]["validation_dataset"]
 
-    #train_key, validation_key, test_key = "train", "validation", "test"
-    # DP = r"J:\data\mllm-data\mllm-pretrain-data"
     en_ds = {}
     for dataset_path in [train_dataset, validation_dataset, test_dataset]:
         dataset = datasets.Dataset.from_file(dataset_path).select(range(1000)) \
@@ -239,21 +237,6 @@ if __name__ == "__main__":
         custom_model.trainer.train()
 
     else:
-        def custom_collate(batch, random_padding):
-            ids, images, angles, ground_truths, labels, targets, random_paddings = [], [], [], [], [], [], []
-            for sample in batch:
-                ids.append(sample["id"])
-                # images.append(sample["image"].convert("RGB"))
-                images.append(Image.open(sample["image"]).convert("RGB"))
-                angles.append(sample["angle"])
-                ground_truths.append(sample["ground_truth"])
-                labels.append(sample["labels"])
-                targets.append(sample["target"])
-                random_paddings.append(sample["random_padding"])
-            pixel_values = processor(images, random_padding=random_padding,
-                                     return_tensors="pt").pixel_values#.squeeze()
-            return ids, pixel_values, angles, ground_truths, torch.tensor(labels), targets, random_paddings
-
         val_num = all_train_config[task_name]["val_num"]
         train_num = all_train_config[task_name]["train_num"] \
             if "train_num" in all_train_config[task_name] else len(en_ds["train"])
@@ -264,12 +247,12 @@ if __name__ == "__main__":
         train_dataloader = DataLoader(train_dataset_select,
                                       batch_size=all_train_config[task_name]["per_device_train_batch_size"],
                                       shuffle=True,
-                                      collate_fn=lambda x: custom_collate(x, True),
+                                      collate_fn=lambda x: custom_collate(x, True, processor),
                                       num_workers=0)
         val_dataloader = DataLoader(en_val_dataset,
                                     batch_size=all_train_config[task_name]["per_device_eval_batch_size"],
                                     shuffle=False,
-                                    collate_fn=lambda x: custom_collate(x, False ),
+                                    collate_fn=lambda x: custom_collate(x, False, processor),
                                     num_workers=0)
 
         batch = next(iter(train_dataloader))

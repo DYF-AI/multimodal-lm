@@ -9,6 +9,21 @@ from transformers.data.data_collator import DataCollatorMixin
 from transformers.utils import PaddingStrategy
 
 
+def custom_collate(batch, random_padding, processor):
+    ids, images, angles, ground_truths, labels, targets, random_paddings = [], [], [], [], [], [], []
+    for sample in batch:
+        ids.append(sample["id"])
+        # images.append(sample["image"].convert("RGB"))
+        images.append(Image.open(sample["image"]).convert("RGB"))
+        angles.append(sample["angle"])
+        ground_truths.append(sample["ground_truth"])
+        labels.append(sample["labels"])
+        targets.append(sample["target"])
+        random_paddings.append(sample["random_padding"])
+    pixel_values = processor(images, random_padding=random_padding,
+                             return_tensors="pt").pixel_values  # .squeeze()
+    return ids, pixel_values, angles, ground_truths, torch.tensor(labels), targets, random_paddings
+
 @dataclass
 class DataCollatorForGeneration(DataCollatorMixin):
     processor: DonutProcessor
