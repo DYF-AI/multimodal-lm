@@ -14,6 +14,12 @@ def trans_platform(path, win="J:/", linux="/mnt/j/"):
 
 platform = sys.platform
 def json2token(obj:Any, sort_key: bool=True):
+    """
+    这里独立成函数后,需要手动把<s_{k}>加入到词表中华
+    :param obj:
+    :param sort_key:
+    :return:
+    """
     if isinstance(obj, list):
         return r"<sep/>".join([json2token(v, sort_key) for v in obj])
     elif isinstance(obj, dict):

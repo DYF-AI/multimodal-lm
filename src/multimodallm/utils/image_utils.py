@@ -19,6 +19,10 @@ def load_image(image_path:str, return_chw:bool=True, return_bgr:bool=True, size:
         image = image.transpose(2, 0, 1)
     return image, (w, h)
 
+def load_pil_image(image_path:str, return_chw:bool=True, return_bgr:bool=True, size:tuple=None):
+    image = Image.open(image_path).convert("RGB")
+    (w, h) = image.size
+    return image, (w, h)
 def pdf_to_images(pdf_path:str, output_path:str, high_quality=True) -> bool:
     doc = fitz.open(pdf_path)
     base_name = os.path.basename(pdf_path).split(".")[0]

@@ -102,10 +102,8 @@ class CustomDonutModelHFTrainer:
 
         scores = []
         for pred, answer in zip(predict_sequences, answer_sequence):
-            #print(f"pred json:{token2json(pred, expand_vocab=self.expand_vocab)}")
-            #print(f"answer json:{token2json(answer, expand_vocab=self.expand_vocab)}")
-            print(f"pred json:{self.processor.token2json(pred)}")
-            print(f"answer json:{self.processor.token2json(answer)}")
+            print(f"pred  :{self.processor.token2json(pred)}")
+            print(f"answer:{self.processor.token2json(answer)}")
             answer = convert_json_key_to_id(token2json(answer, expand_vocab=self.expand_vocab), key_ids=self.key_ids)
             # answer = token2json(answer)
             answer = yaml.dump(answer, allow_unicode=True, sort_keys=False)
