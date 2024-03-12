@@ -46,7 +46,7 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240120\pl-checkpoint-3625-ned-0.8013155963470444",
             "MP": r"J:\model\mllm-model\donut-large-pretrain\20240122\pl-checkpoint-3625-ned-0.7967201287113991",
             "freeze_encoder": False,
-            "use_huggingface_trainer": False,
+            "use_huggingface_trainer": True,
             "num_epoch":20,
             "max_length": 2560,
             "start_token": "<s_ocr_pretrain>",
