@@ -54,10 +54,10 @@ def find_unk_chars(unk_words, tokenizer):
     return unk_chars
 
 def writer_expand_vocab(tokenizer):
-    DP1 = r"J:\data\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"  # csv
-    DP2 = r"J:\data\corpus-data\Chinese-Names-Corpus\Chinese_Dict_Corpus\ChengYu_Corpus（5W）.txt"
-    DP3 = r"J:\data\corpus-data\Chinese-Names-Corpus\Chinese_Names_Corpus\Ancient_Names_Corpus（25W）.txt"
-    DP4 = r"J:\data\corpus-data\Chinese-Names-Corpus\Chinese_Names_Corpus\Chinese_Names_Corpus（120W）.txt"
+    DP1 = "J:/data/mllm-data/mllm-pretrain-data/mllm-data-20231116.csv"  # csv
+    DP2 = "J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Dict_Corpus/ChengYu_Corpus（5W）.txt"
+    DP3 = "J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Names_Corpus/Ancient_Names_Corpus（25W）.txt"
+    DP4 = r"J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Names_Corpus/Chinese_Names_Corpus（120W）.txt"
 
     data_list = list()
     data_list_1 = read_csv(DP1)
@@ -76,8 +76,8 @@ def writer_expand_vocab(tokenizer):
             f1.write(vocab + "\n")
 
 if __name__ == "__main__":
-    MP = r"J:\model\pretrained-model\torch\donut-base"
-    NEW_MP = r"J:\model\pretrained-model\torch\donut-base-expand-vocab"
+    MP = "J:/model/pretrained-model/torch\donut-base"
+    NEW_MP = "J:/model/pretrained-model/torch/donut-base-expand-vocab"
     if os.path.exists(NEW_MP):
         os.makedirs(NEW_MP)
 

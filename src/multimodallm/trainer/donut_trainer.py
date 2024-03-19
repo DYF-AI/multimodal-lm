@@ -293,28 +293,6 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
         self.val_metric_in_validation = 0
         self.val_metric_nums = 0
 
-    # def on_validation_end(self):
-    #     # I set this to 1 manually
-    #     # (previously set to len(self.config.dataset_name_or_paths))
-    #     num_of_loaders = 1
-    #     if num_of_loaders == 1:
-    #         self.validation_step_outputs = [self.validation_step_outputs]
-    #     assert len(self.validation_step_outputs) == num_of_loaders
-    #     cnt = [0] * num_of_loaders
-    #     total_metric = [0] * num_of_loaders
-    #     val_metric = [0] * num_of_loaders
-    #     for i, results in enumerate(self.validation_step_outputs):
-    #         for scores in results:
-    #             cnt[i] += len(scores)
-    #             total_metric[i] += np.sum(scores)
-    #         val_metric[i] = total_metric[i] / cnt[i]
-    #         val_metric_name = f"val_metric_{i}th_dataset"
-    #         self.log_dict({val_metric_name: val_metric[i]}, sync_dist=True)
-    #     self.log_dict({"val_metric": np.sum(total_metric) / np.sum(cnt)}, sync_dist=True)
-    #     self.validation_step_outputs.clear()
-    #     self.val_metric_in_validation = 0
-    #     self.self.val_metric_nums = 0
-
     def configure_optimizers(self):
         # TODO add scheduler
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.get("lr"))

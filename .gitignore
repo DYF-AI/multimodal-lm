@@ -9,6 +9,9 @@ src/multimodallm/wandb
 # C extensions
 *.so
 
+*.bin
+*.json
+
 third_party/ppocrlabel-pil/.idea
 # tests and logs
 tests/fixtures/cached_*_text.txt
@@ -137,15 +140,15 @@ tensorflow_code
 # Models
 proc_data
 
-# examples
+# data_processing
 runs
 /runs_old
 /wandb
 src/multimodallm/donut
 src/multimodallm/donut-model
-/examples/runs
+/data_processing/runs
 /examples/**/*.args
-/examples/rag/sweep
+/data_processing/rag/sweep
 
 # data
 /data
