@@ -44,7 +44,7 @@ if __name__ == "__main__":
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240115\pl-checkpoint-10875-ned-0.7835185623629602",
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240118\pl-checkpoint-3625-ned-0.8024234214089616",
             #"MP": r"J:\model\mllm-model\donut-large-pretrain\20240120\pl-checkpoint-3625-ned-0.8013155963470444",
-            "MP": r"J:\model\mllm-model\donut-large-pretrain\20240122\pl-checkpoint-3625-ned-0.7967201287113991",
+            "MP": "N:/model/mllm-model/donut-large-pretrain/20240122/pl-checkpoint-3625-ned-0.7967201287113991",
             "freeze_encoder": False,
             "use_huggingface_trainer": True,
             "num_epoch":20,
@@ -52,10 +52,10 @@ if __name__ == "__main__":
             "start_token": "<s_ocr_pretrain>",
             "image_size": [1024, 1024],
             "expand_vocab": ["<s_ocr_pretrain>", "</s_ocr_pretrain>", "<s_text_sequence>", "</s_text_sequence>"],
-            "train_dataset": r"J:\dataset\mllm-data\mllm-pretrain-data\train.arrow",
-            "validation_dataset":r"J:\dataset\mllm-data\mllm-pretrain-data\validation.arrow",
-            "test_dataset":r"J:\dataset\mllm-data\mllm-pretrain-data\test.arrow",
-            "model_save_path": os.path.join(r"J:\model\mllm-model\donut-large-pretrain", date.strftime('%Y%m%d')),
+            "train_dataset": "J:/dataset/mllm-data/mllm-pretrain-data/train.arrow",
+            "validation_dataset": "J:/dataset/mllm-data/mllm-pretrain-data/validation.arrow",
+            "test_dataset":"J:/dataset/mllm-data/mllm-pretrain-data/test.arrow",
+            "model_save_path": os.path.join("J:/model/mllm-model/donut-large-pretrain", date.strftime('%Y%m%d')),
             #"model_save_path": os.path.join(r"J:\model\mllm-model\donut-pretrain", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,  # huggingface 调用了共享GPU内存?
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         },
         # 火车票
         "train_ticket": {
-            "MP": r"J:\model\pretrained-model\torch\donut-base",
+            "MP": "N:/model/pretrained-model/torch/donut-base",
             #"MP": r"J:\model\mllm-model\train_ticket\checkpoint-760",
             "use_huggingface_trainer": True,
             "num_epoch": 20,
@@ -85,10 +85,10 @@ if __name__ == "__main__":
                              "<s_ticket_num>", "</s_ticket_num>","<s_date>", "</s_date>", "<s_train_num>", "</s_train_num>",
                              "<s_trainticket>",
                              ],
-            "train_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\train.arrow",
-            "validation_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\test.arrow",
-            "test_dataset": r"J:\dataset\mllm-data\mllm-finetune-data\trainticket\test_cache.arrow",
-            "model_save_path": os.path.join(r"J:\model\mllm-model\train_ticket", date.strftime('%Y%m%d')),
+            "train_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/train.arrow",
+            "validation_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test.arrow",
+            "test_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test_cache.arrow",
+            "model_save_path": os.path.join("J:/model/mllm-model/train_ticket", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 1,
             "per_device_eval_batch_size": 1, # huggingface 调用了共享GPU内存?
             "gradient_accumulation_steps": 4, # 梯度累计速度会变慢很多？
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     print(f"config:{all_train_config[task_name]}")
 
     # 扩展词表的donut-base
-    #MP = r"J:\model\pretrained-model\torch\donut-base-expand-vocab"
+    #MP = "J:/model/pretrained-model/torch/donut-base-expand-vocab"
     # 需要统计以下训练集的长度
     max_length = all_train_config[task_name]["max_length"]
     start_token = all_train_config[task_name]["start_token"]
@@ -220,7 +220,7 @@ if __name__ == "__main__":
             predict_with_generate=True,
             save_total_limit=all_train_config[task_name]["save_total_limit"],
             metric_for_best_model="norm_edit",
-            report_to="none",
+            report_to="wandb",
             run_name=task_name,
             dataloader_pin_memory=True,
         )

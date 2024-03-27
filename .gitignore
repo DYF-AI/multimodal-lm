@@ -8,6 +8,8 @@ src/multimodallm/wandb
 
 # C extensions
 *.so
+*.ckpt
+
 
 *.bin
 *.json

@@ -1,4 +1,3 @@
-
 import os
 import difflib
 import json
@@ -17,6 +16,7 @@ from transformers import GenerationConfig, Seq2SeqTrainingArguments, DonutProces
     VisionEncoderDecoderModel, Seq2SeqTrainer, EarlyStoppingCallback
 from multimodallm.collator import DataCollatorForGeneration
 from multimodallm.utils.data_utils import convert_json_key_to_id, token2json, preprocess
+
 
 class GenSeq2SeqTrainer(Seq2SeqTrainer):
     def prediction_step(
@@ -41,6 +41,7 @@ class CustomDonutModelHFTrainer:
     """
         huggingface trainer
     """
+
     def __init__(self,
                  model_config: VisionEncoderDecoderConfig,
                  training_args: Seq2SeqTrainingArguments,
@@ -55,7 +56,7 @@ class CustomDonutModelHFTrainer:
         self.training_args = training_args
         self.processor = processor
         self.model = model
-        #self.tokenizer = self.processor.tokenizer,
+        # self.tokenizer = self.processor.tokenizer,
         self.expand_vocab = expand_vocab
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
@@ -96,7 +97,7 @@ class CustomDonutModelHFTrainer:
         answer_sequence = list()
         for seq in label_decode_list:
             seq = seq.replace(self.processor.tokenizer.eos_token, "").replace(self.processor.tokenizer.pad_token, "")
-            #seq = re.sub(r"<.*?>", "", seq, count=1).strip() # remove first task start token, label是没有start_token的
+            # seq = re.sub(r"<.*?>", "", seq, count=1).strip() # remove first task start token, label是没有start_token的
             seq = re.sub(r"(?:(?<=>) | (?=</s_))", "", seq)
             answer_sequence.append(seq)
 
@@ -129,7 +130,6 @@ class CustomDonutModelHFTrainer:
         )
 
 
-
 class SaveModelCallback(Callback):
     def __init__(self,
                  save_model_path,
@@ -137,12 +137,14 @@ class SaveModelCallback(Callback):
         self.best_val_metric = -100
         self.model_model_path = save_model_path
         self.save_all_validation_ckpt = save_all_validation_ckpt
+
     def on_train_epoch_end(self, trainer, pl_module):
         print(f"Pushing model to the hub, epoch {trainer.current_epoch}")
         print(f"save mode: {self.save_all_validation_ckpt}")
         model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}_ned_{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
-            print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
+            print(
+                f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
             pl_module.processor.save_pretrained(model_save_path,
@@ -151,7 +153,8 @@ class SaveModelCallback(Callback):
                                             commit_message=f"Training in progress, epoch {trainer.current_epoch}")
             self.best_val_metric = trainer.callback_metrics['val_metric']
         elif self.save_all_validation_ckpt:
-            print(f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
+            print(
+                f"save current best model: epoch_{trainer.current_epoch}-ned-{trainer.callback_metrics['val_metric']}")
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
             pl_module.processor.save_pretrained(model_save_path,
@@ -160,25 +163,25 @@ class SaveModelCallback(Callback):
                                             commit_message=f"Training in progress, epoch {trainer.current_epoch}")
             self.best_val_metric = trainer.callback_metrics['val_metric']
 
-
     def on_train_end(self, trainer, pl_module):
         """训练结束前,再保存一次"""
         print(f"\nPushing model to the hub after training")
         # pl_module.processor.push_to_hub("nielsr/donut-demo", commit_message=f"Training done")
-        #model_save_path = f"{self.model_model_path}/epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}"
+        # model_save_path = f"{self.model_model_path}/epoch_{trainer.current_epoch}_ned_{trainer.callback_metrics['val_metric']}"
         model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
         if not os.path.exists(model_save_path):
             os.makedirs(model_save_path)
         pl_module.processor.save_pretrained(model_save_path, commit_message=f"Training done")
         pl_module.model.save_pretrained(model_save_path, commit_message=f"Training done")
 
-    #def on_validation_epoch_end(self, trainer, pl_module):
+    # def on_validation_epoch_end(self, trainer, pl_module):
     def on_validation_end(self, trainer, pl_module):
         """Called when the val epoch ends."""
         print(f"save mode: {self.save_all_validation_ckpt}")
         model_save_path = f"{self.model_model_path}/pl-checkpoint-{trainer.global_step}-ned-{trainer.callback_metrics['val_metric']}"
         if trainer.callback_metrics['val_metric'] > self.best_val_metric:
-            print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
+            print(
+                f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
             print(f"Pushing model to the hub after validation")
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
@@ -186,7 +189,8 @@ class SaveModelCallback(Callback):
             pl_module.model.save_pretrained(model_save_path, commit_message=f"validation done")
             self.best_val_metric = trainer.callback_metrics['avg_val_metric']
         elif self.save_all_validation_ckpt:
-            print(f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
+            print(
+                f"\nsave model: {trainer.callback_metrics['val_metric']} , better than best_val_metric: {self.best_val_metric}")
             print(f"Pushing model to the hub after validation")
             if not os.path.exists(model_save_path):
                 os.makedirs(model_save_path)
@@ -194,10 +198,12 @@ class SaveModelCallback(Callback):
             pl_module.model.save_pretrained(model_save_path, commit_message=f"validation done")
             self.best_val_metric = trainer.callback_metrics['avg_val_metric']
 
+
 class CustomDonutModelPLTrainer(pl.LightningModule):
     """
         pytorch-lightning trainer
     """
+
     def __init__(self,
                  config,
                  processor,
@@ -226,7 +232,8 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
         # RuntimeError: [enforce fail at C:\cb\pytorch_1000000000000\work\c10\core\impl\alloc_cpu.cpp:81] data. DefaultCPUAllocator: not enough memory: you tried to allocate 4194304 bytes.
         self.total_train_loss += loss.item()
         self.total_train_step += 1
-        self.log_dict({"train_loss": loss, "avg_train_loss": self.total_train_loss/(self.total_train_step+0.001)}, sync_dist=True)
+        self.log_dict({"train_loss": loss, "avg_train_loss": self.total_train_loss / (self.total_train_step + 0.001)},
+                      sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx, dataset_idx=0):
@@ -253,15 +260,15 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
         scores = list()
         for id, pred, answer in zip(ids, predictions, ground_truths):
             pred = re.sub(r"(?:(?<=>) | (?=</s_))", "", pred)
-            pred = json.dumps(self.processor.token2json(pred), ensure_ascii=False) # ground_truths是json
+            pred = json.dumps(self.processor.token2json(pred), ensure_ascii=False)  # ground_truths是json
             # NOT NEEDED ANYMORE
             # answer = re.sub(r"<.*?>", "", answer, count=1)
             answer = answer.replace(self.processor.tokenizer.eos_token, "")
-            norm_ed = 1-(edit_distance(pred, answer) / max(len(pred), len(answer)))
+            norm_ed = 1 - (edit_distance(pred, answer) / max(len(pred), len(answer)))
             scores.append(norm_ed)
             self.val_metric_in_validation += norm_ed
             self.val_metric_nums += 1
-            #self.log_dict({"avg_val_metric": self.val_metric_in_validation/(self.val_metric_nums)}, sync_dist=True)
+            # self.log_dict({"avg_val_metric": self.val_metric_in_validation/(self.val_metric_nums)}, sync_dist=True)
             if self.config.get("verbose", False) and len(scores) == 1:
                 print(f"\nid:{id}")
                 print(f"Prediction: {self.processor.token2json(pred)}")
@@ -304,4 +311,3 @@ class CustomDonutModelPLTrainer(pl.LightningModule):
 
     def val_dataloader(self):
         return self.model_val_dataloader
-

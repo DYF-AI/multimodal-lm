@@ -45,7 +45,7 @@ class CustomDonutFinetuneDataset(Dataset):
         return encoding
 
     def __len__(self):
-        pass
+        return len(self.data)
 
 
 if __name__ == '__main__':

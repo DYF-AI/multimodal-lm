@@ -1,12 +1,7 @@
 import re
-import torch
 import json
-from typing import Any, Union, Optional
-from dataclasses import dataclass
+from typing import Any
 import numpy as np
-from transformers import PreTrainedTokenizerBase, DonutProcessor
-from transformers.data.data_collator import DataCollatorMixin
-from transformers.utils import PaddingStrategy
 import sys
 def trans_platform(path, win="J:/", linux="/mnt/j/"):
     new_path = path.replace("\\", "/").replace(win, linux)

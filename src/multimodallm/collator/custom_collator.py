@@ -32,7 +32,6 @@ def custom_collate(batch, random_padding, processor):
     ids, images, angles, ground_truths, labels, targets, random_paddings = [], [], [], [], [], [], []
     for sample in batch:
         ids.append(sample["id"])
-        # images.append(sample["image"].convert("RGB"))
         images.append(Image.open(sample["image"]).convert("RGB"))
         angles.append(sample["angle"])
         ground_truths.append(sample["ground_truth"])
@@ -63,7 +62,6 @@ class DataCollatorForGeneration(DataCollatorMixin):
         else:
             image_list = list()
             for feature in features:
-                #image = feature["image"].convert("RGB")
                 image = Image.open(feature["image"]).convert("RGB")
                 angle = feature["angle"]
                 if angle:

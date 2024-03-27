@@ -17,16 +17,9 @@ def getAllFiles(path, suffix_list:list=None):
     return filelist
 
 
-# def getRootAndId(file_path:str):
-#     file_path_split = file_path.split("/")
-#     file_id = file_path_split[-2] + "/" + file_path_split[-1]
-#     file_root = os.path.join(file_path_split[0], "/"+"/".join(file_path_split[1:-2]))
-#     return file_root, file_id
-
-
 if __name__ == "__main__":
     #path = r"J:\data\mllm-data"
-    path = r"J:\data\mllm-data\image-book"
+    path = "J:/data/mllm-data/image-book"
     files1 = getAllFiles(path, [".jpg", ".png"])
     files2 = getAllFiles(path)
     print(f"files1 nums:{len(files1)}")
