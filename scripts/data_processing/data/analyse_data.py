@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-metadata_file = r"J:\data\mllm-data\mllm-pretrain-data\mllm-data-20231116.csv"
+metadata_file = "J:/data/mllm-data/mllm-pretrain-data/mllm-data-20231116.csv"
 
 df = pd.read_csv(metadata_file)
 
