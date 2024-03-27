@@ -20,14 +20,14 @@ from transformers import DonutProcessor
 from multimodallm.utils.data_utils import preprocess
 
 # train_key, validation_key, test_key = "train", "validation", "test"
-DP = r"J:\data\mllm-data\mllm-pretrain-data"
+DP = "J:/data/mllm-data/mllm-pretrain-data"
 
-train_dataset = r"J:\data\mllm-data\mllm-pretrain-data\train.arrow"
-validation_dataset = r"J:\data\mllm-data\mllm-pretrain-data\validation.arrow"
-test_dataset = r"J:\data\mllm-data\mllm-pretrain-data\test.arrow"
+train_dataset = "J:/data/mllm-data/mllm-pretrain-data/train.arrow"
+validation_dataset = "J:/data/mllm-data/mllm-pretrain-data/validation.arrow"
+test_dataset = "J:/data/mllm-data/mllm-pretrain-data/test.arrow"
 max_length = 2560
 image_size = [1024, 1024]
-MP = r"J:\model\mllm-model\donut-pretrain\20231124\pl-checkpoint-14500-ned-0.8225900701319295"
+MP = "J:/model/mllm-model/donut-pretrain/20231124/pl-checkpoint-14500-ned-0.8225900701319295"
 processor = DonutProcessor.from_pretrained(MP)
 processor.image_processor.size = image_size[::-1]  # should be (width, height)
 processor.image_processor.do_align_long_axis = False

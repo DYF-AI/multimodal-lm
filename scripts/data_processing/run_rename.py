@@ -21,4 +21,4 @@ def rename(image_root:str, feature="%", new_name_startwith="image")->bool:
     return True
 
 if __name__ == "__main__":
-    flag = rename(r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-法律法规")
+    flag = rename("J:/data/mllm-data/mllm-pretrain-data/crawler-data-法律法规")

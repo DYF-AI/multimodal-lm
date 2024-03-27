@@ -30,12 +30,12 @@ def run_genereate_state_file_with_Label(label_file:str,
 
 
 if __name__ == "__main__":
-    ocr_result_1 = r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
-    ocr_result_2 = r"J:\data\mllm-data\image-book\Label_last.txt"
-    save_merge_result = r"J:\data\mllm-data\image-book\Label.txt"
+    ocr_result_1 = "J:/data/mllm-data/image-book/Label_continue_v4.txt"
+    ocr_result_2 = "J:/data/mllm-data/image-book/Label_last.txt"
+    save_merge_result = "J:/data/mllm-data/image-book/Label.txt"
     merge_ocr_result(ocr_result_1, ocr_result_2, save_merge_result)
 
-    # label_file = r"J:\data\mllm-data\image-book\Label.txt"
-    # state_file = r"J:\data\mllm-data\image-book\fileState.txt"
-    # save_root = r"J:\data\mllm-data"
+    # label_file = "J:/data/mllm-data/image-book/Label.txt"
+    # state_file = "J:/data/mllm-data/image-book/fileState.txt"
+    # save_root = "J:/data/mllm-data"
     # run_genereate_state_file_with_Label(label_file, state_file, save_root)

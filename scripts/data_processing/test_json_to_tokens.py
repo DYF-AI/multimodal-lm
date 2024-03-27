@@ -8,7 +8,7 @@ if __name__ == "__main__":
     json_seq = json.loads(sequence)
     seq = json2token(json_seq)
     json_seq1 = token2json(seq, expand_vocab=expand_vocab)
-    MP = r"J:\model\pretrained-model\torch\donut-base"
+    MP = "J:/model/pretrained-model/torch/donut-base"
 
     from transformers import DonutProcessor
 

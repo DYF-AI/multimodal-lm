@@ -122,7 +122,7 @@ def split_and_move_data(data_root:str):
 
 
 if __name__ == "__main__":
-    data_root = r"J:\data\mllm-data\mllm-pretrain-data"
+    data_root = "J:/data/mllm-data/mllm-pretrain-data"
     split_and_move_data(data_root)
 
 

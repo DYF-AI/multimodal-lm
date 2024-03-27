@@ -9,8 +9,8 @@ from multimodallm.utils.file_utils import getAllFiles
 """
 
 def test_pdf_to_image():
-    pdf_file = r"K:\doc\book\Python设计模式-第2版-[印]Chetan Giridhar-韩波译2017.pdf"
-    save_image_path = r"K:\doc\book"
+    pdf_file = "K:/doc/book/Python设计模式-第2版-[印]Chetan Giridhar-韩波译2017.pdf"
+    save_image_path = "K:/doc/book"
     pdf_to_images(pdf_file, save_image_path)
 
 def worker(pdf_file:str, save_path):
@@ -42,4 +42,4 @@ def run_pdf_to_images(book_path, save_image_path, use_mp=True):
 
 
 if __name__ == "__main__":
-    run_pdf_to_images(r"J:\data\books", r"K:\data\mllm-data\image-book")
+    run_pdf_to_images("J:/data/books", "K:/data/mllm-data/image-book")

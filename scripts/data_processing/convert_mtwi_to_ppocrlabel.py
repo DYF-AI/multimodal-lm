@@ -43,8 +43,8 @@ def convert(image_root:str, txt_root:str, save_label:str, save_state_file:str):
             f2.flush()
 
 if __name__ == "__main__":
-    image_root = r"J:\data\mllm-data\mtwi-2018-data\mtwi-2018-image"
-    txt_root = r"J:\data\mllm-data\mtwi-2018-data\txt_train"
-    save_label = r"J:\data\mllm-data\mtwi-2018-data\mtwi-2018-image\Label.txt"
-    save_state_file = r"J:\data\mllm-data\mtwi-2018-data\mtwi-2018-image\fileState.txt"
+    image_root = "J:/data/mllm-data/mtwi-2018-data/mtwi-2018-image"
+    txt_root = "J:/data/mllm-data/mtwi-2018-data/txt_train"
+    save_label = "J:/data/mllm-data/mtwi-2018-data/mtwi-2018-image/Label.txt"
+    save_state_file = "J:/data/mllm-data/mtwi-2018-data/mtwi-2018-image/fileState.txt"
     convert(image_root, txt_root, save_label, save_state_file)

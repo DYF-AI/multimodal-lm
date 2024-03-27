@@ -3,7 +3,7 @@ from tqdm import tqdm
 import pandas as pd
 
 """
-    
+    根据语料扩展词表
 """
 
 def read_csv(csv_file):
@@ -57,7 +57,7 @@ def writer_expand_vocab(tokenizer):
     DP1 = "J:/data/mllm-data/mllm-pretrain-data/mllm-data-20231116.csv"  # csv
     DP2 = "J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Dict_Corpus/ChengYu_Corpus（5W）.txt"
     DP3 = "J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Names_Corpus/Ancient_Names_Corpus（25W）.txt"
-    DP4 = r"J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Names_Corpus/Chinese_Names_Corpus（120W）.txt"
+    DP4 = "J:/data/corpus-data/Chinese-Names-Corpus/Chinese_Names_Corpus/Chinese_Names_Corpus（120W）.txt"
 
     data_list = list()
     data_list_1 = read_csv(DP1)

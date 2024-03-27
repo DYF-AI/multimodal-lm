@@ -80,23 +80,23 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
     return all_ocr_reulsts
 
 def test_ocr_predict():
-    image_file = r"J:\data\mllm-data\crawler-data\image\电脑配置单\0df431adcbef76091cf9b1eb2edda3cc7dd99ed7.jpg"
+    image_file = "J:/data/mllm-data/crawler-data/image/电脑配置单/0df431adcbef76091cf9b1eb2edda3cc7dd99ed7.jpg"
     result = ocr_predict(image_file=image_file)
     print(result)
 
 
 def test_run_ocr_predict():
-    #image_root = r"J:\data\mllm-data\image-book"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-人物介绍"
-    image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-产品说明"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-保单材料"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-作文"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-判决书"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-名片"
-    #image_root = r"J:\data\mllm-data\mllm-pretrain-data\crawler-data-法律法规"
+    #image_root = "J:/data/mllm-data/image-book"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-人物介绍"
+    image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-产品说明"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-保单材料"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-作文"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-判决书"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-名片"
+    #image_root = "J:/data/mllm-data/mllm-pretrain-data/crawler-data-法律法规"
 
-    #image_root = r"J:\data\mllm-data\crawler-data\image\法律法规"
-    predicted_file = None # r"J:\data\mllm-data\image-book\Label_continue_v4.txt"
+    #image_root = "J:/data/mllm-data/crawler-data/image/法律法规"
+    predicted_file = None # "J:/data/mllm-data/image-book/Label_continue_v4.txt"
     all_ocr_reulsts = run_ocr_predict(image_root, use_mp=False, predicted_file=predicted_file)
 
     #save_label = os.path.join(image_root, "Label1.txt")
