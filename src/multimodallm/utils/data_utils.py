@@ -3,12 +3,17 @@ import json
 from typing import Any
 import numpy as np
 import sys
+
+
 def trans_platform(path, win="J:/", linux="/mnt/j/"):
     new_path = path.replace("\\", "/").replace(win, linux)
     return new_path
 
+
 platform = sys.platform
-def json2token(obj:Any, sort_key: bool=True):
+
+
+def json2token(obj: Any, sort_key: bool = True):
     """
     这里独立成函数后,需要手动把<s_{k}>加入到词表中华
     :param obj:
@@ -18,8 +23,8 @@ def json2token(obj:Any, sort_key: bool=True):
     if isinstance(obj, list):
         return r"<sep/>".join([json2token(v, sort_key) for v in obj])
     elif isinstance(obj, dict):
-        items = sorted(obj.items(), key=lambda x:x[0]) if sort_key else obj.items()
-        return "".join([fr"<s_{k}>" + json2token(v, sort_key) + fr"</s_{k}>" for k,v in items])
+        items = sorted(obj.items(), key=lambda x: x[0]) if sort_key else obj.items()
+        return "".join([fr"<s_{k}>" + json2token(v, sort_key) + fr"</s_{k}>" for k, v in items])
     obj = str(obj)
     return obj
 
@@ -31,7 +36,7 @@ def convert_json_key_to_id(obj, key_ids):
         new_obj = dict()
         for k, v in obj.items():
             if k not in key_ids:
-                key_ids[k] = max(key_ids.values())+1
+                key_ids[k] = max(key_ids.values()) + 1
             new_obj[key_ids[k]] = convert_json_key_to_id(v, key_ids)
         return obj
     return obj
@@ -58,7 +63,7 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
             start_token_escaped = re.escape(start_token)
             end_token_escaped = re.escape(end_token)
             # 换行/n 需要增加re.S
-            content = re.search(f"{start_token_escaped}(.*?){end_token_escaped}", tokens, re.IGNORECASE|re.S)
+            content = re.search(f"{start_token_escaped}(.*?){end_token_escaped}", tokens, re.IGNORECASE | re.S)
             if content is not None:
                 content = content.group(1).strip()
                 if r"<s_" in content and r"</s_" in content:  # non-leaf node
@@ -88,11 +93,11 @@ def token2json(tokens, is_inner_value=False, expand_vocab=None):
 
 
 def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
-    target_sequence = [json2token(json.loads(v), sort_key=sort_key)+processor.tokenizer.eos_token for v in rows["ground_truth"]]
+    target_sequence = [json2token(json.loads(v), sort_key=sort_key) + processor.tokenizer.eos_token for v in
+                       rows["ground_truth"]]
     if platform == "linux":
         image = [trans_platform(v) for v in rows["image"]]
         rows["image"] = image
-
 
     labels = processor.tokenizer(
         target_sequence,
@@ -105,15 +110,15 @@ def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=
     # eager：缓存图片数据， 开启缓存需要大量内存
     if not eager:
         return {
-            "labels":labels,
+            "labels": labels,
             "target": target_sequence,
-            "random_padding":[random_padding for _ in range(len(labels))]
+            "random_padding": [random_padding for _ in range(len(labels))]
         }
     image_list = rows["image"]
     image_angle_list = []
     for image, angle in zip(rows["image"], rows["angle"]):
         if angle:
-            image = image.rotate(360-angle)
+            image = image.rotate(360 - angle)
             image_angle_list.append(image)
     if len(image_angle_list) == len(image_list):
         image_list = image_angle_list
@@ -125,12 +130,13 @@ def preprocess(rows, processor=None, sort_key=True, eager=False, random_padding=
         "target": target_sequence
     }
 
+
 def preprocess_prompt(rows, processor=None, sort_key=True, eager=False, random_padding=False, max_length=768):
-    target_sequence = [json2token(json.loads(v), sort_key=sort_key)+processor.tokenizer.eos_token for v in rows["ground_truth"]]
+    target_sequence = [json2token(json.loads(v), sort_key=sort_key) + processor.tokenizer.eos_token for v in
+                       rows["ground_truth"]]
     if platform == "linux":
         image = [trans_platform(v) for v in rows["image"]]
         rows["image"] = image
-
 
     labels = processor.tokenizer(
         target_sequence,
@@ -143,15 +149,15 @@ def preprocess_prompt(rows, processor=None, sort_key=True, eager=False, random_p
     # eager：缓存图片数据， 开启缓存需要大量内存
     if not eager:
         return {
-            "labels":labels,
+            "labels": labels,
             "target": target_sequence,
-            "random_padding":[random_padding for _ in range(len(labels))]
+            "random_padding": [random_padding for _ in range(len(labels))]
         }
     image_list = rows["image"]
     image_angle_list = []
     for image, angle in zip(rows["image"], rows["angle"]):
         if angle:
-            image = image.rotate(360-angle)
+            image = image.rotate(360 - angle)
             image_angle_list.append(image)
     if len(image_angle_list) == len(image_list):
         image_list = image_angle_list

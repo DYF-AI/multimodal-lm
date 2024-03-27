@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 
 # 方式一，使用os.walk(path)方法
-def getAllFiles(path, suffix_list:list=None):
+def getAllFiles(path, suffix_list: list = None):
     filelist = []
     for home, dirs, files in tqdm(os.walk(path)):
         for filename in tqdm(files):
@@ -18,7 +18,7 @@ def getAllFiles(path, suffix_list:list=None):
 
 
 if __name__ == "__main__":
-    #path = r"J:\data\mllm-data"
+    # path = r"J:\data\mllm-data"
     path = "J:/data/mllm-data/image-book"
     files1 = getAllFiles(path, [".jpg", ".png"])
     files2 = getAllFiles(path)

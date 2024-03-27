@@ -7,11 +7,10 @@ import os
 import stat
 from tqdm import tqdm
 
-
 from multimodallm.utils.file_utils import getAllFiles
 
 
-def chmod_files(file_root:str):
+def chmod_files(file_root: str):
     """
     修改文件路径下所有文件的读写权限
     :param file_root:

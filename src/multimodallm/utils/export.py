@@ -6,29 +6,33 @@ import argparse
 import torch
 import torch.nn as nn
 from PIL import Image
-from transformers import LogitsProcessor, VisionEncoderDecoderModel, DonutProcessor, LogitsProcessorList, VisionEncoderDecoderConfig
+from transformers import LogitsProcessor, VisionEncoderDecoderModel, DonutProcessor, LogitsProcessorList, \
+    VisionEncoderDecoderConfig
 from transformers.generation.logits_process import TemperatureLogitsWarper, TopKLogitsWarper, TopPLogitsWarper
 
-import  transformers
+import transformers
 
 print(f"transformers.__version__:{transformers.__version__}")
+
 
 class InvalidScoreLogitsProcessor(LogitsProcessor):
     def __call__(self,
                  input_ids: torch.LongTensor,
-                 scores:torch.LongTensor) -> torch.LongTensor:
+                 scores: torch.LongTensor) -> torch.LongTensor:
         @torch.jit.script_if_tracing
         def is_invalid(scores):
             if torch.isnan(scores).any() or torch.isinf(scores).any():
                 scores.zero_()
                 scores[..., 5] = 5e4
             return scores
+
         scores = is_invalid(scores)
         return scores
 
-def load_checkpoint_model(model_path:str,
-                          image_size:list=None,
-                          max_length:int=768,
+
+def load_checkpoint_model(model_path: str,
+                          image_size: list = None,
+                          max_length: int = 768,
                           task_prompt="<s_ocr_pretrain>"):
     if image_size is None:
         image_size = [1024, 1024]
@@ -77,12 +81,12 @@ class ChatTokenModel(nn.Module):
         #     self.logists_warper.append(TopPLogitsWarper(top_p=top_p, min_tokens_to_keep=min_tokens_to_keep))
 
     def forward(self,
-                input_ids:torch.LongTensor,
-                prepare_input_ids:torch.LongTensor,
-                encoder_hidden_states:torch.LongTensor,
-                attention_mask:torch.LongTensor,
-                unfinished_sequence:torch.LongTensor,
-                past_key_values:List[List[torch.LongTensor]]=None):
+                input_ids: torch.LongTensor,
+                prepare_input_ids: torch.LongTensor,
+                encoder_hidden_states: torch.LongTensor,
+                attention_mask: torch.LongTensor,
+                unfinished_sequence: torch.LongTensor,
+                past_key_values: List[List[torch.LongTensor]] = None):
         pad_token_id = 1
         eos_token_id = [2]
         eos_token_id_tensor = torch.Tensor(eos_token_id).to(input_ids.device)
@@ -96,15 +100,15 @@ class ChatTokenModel(nn.Module):
             "attention_mask": attention_mask,
             "use_cache": use_cache,
             "past_key_values": past_key_values,
-            "is_frist_forward": True, # 随意, 后续不依赖该值
+            "is_frist_forward": True,  # 随意, 后续不依赖该值
         }
         this_peer_finshed = torch.zeros([1])
 
         model_inputs = {
-            "input_ids":prepare_input_ids,
+            "input_ids": prepare_input_ids,
             "encoder_hidden_states": encoder_hidden_states,
             "past_key_values": past_key_values,
-            "attention_mask":attention_mask
+            "attention_mask": attention_mask
         }
 
         outputs = self.model(
@@ -126,7 +130,7 @@ class ChatTokenModel(nn.Module):
 
         # finished sentences should have their next token be a padding token
         # if eos_token_id is not None:
-        next_tokens = next_tokens * unfinished_sequence + pad_token_id*(1 - unfinished_sequence)
+        next_tokens = next_tokens * unfinished_sequence + pad_token_id * (1 - unfinished_sequence)
 
         # update generated ids, model_inputs, and length for next step
         input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
@@ -136,19 +140,19 @@ class ChatTokenModel(nn.Module):
         )
 
         @torch.jit.script_if_tracing
-        def eos_stopping_criteria(unfinished_sequence:torch.Tensor):
+        def eos_stopping_criteria(unfinished_sequence: torch.Tensor):
             if unfinished_sequence.max().equal(torch.zeros([1], device=unfinished_sequence.device).max()):
                 return torch.ones([1])
             return torch.zeros([1])
 
         @torch.jit.script_if_tracing
-        def max_length_stopping_criteria(input_ids:torch.LongTensor, max_length:int):
+        def max_length_stopping_criteria(input_ids: torch.LongTensor, max_length: int):
             if input_ids.shape[-1] >= max_length:
                 return torch.ones([1])
             return torch.zeros([1])
 
         @torch.jit.script_if_tracing
-        def merge_stopping_criteria(this_peer_finished:torch.Tensor, stop_res:torch.Tensor):
+        def merge_stopping_criteria(this_peer_finished: torch.Tensor, stop_res: torch.Tensor):
             if torch.is_nonzero(stop_res):
                 this_peer_finished = torch.ones([1])
             return this_peer_finished
@@ -163,7 +167,9 @@ class ChatTokenModel(nn.Module):
 
         this_peer_finshed = merge_stopping_criteria(eos_stopping_res, max_length_stopping_res)
 
-        return this_peer_finshed, input_ids, model_kwargs["attention_mask"], unfinished_sequence, model_kwargs["past_key_values"]
+        return this_peer_finshed, input_ids, model_kwargs["attention_mask"], unfinished_sequence, model_kwargs[
+            "past_key_values"]
+
 
 class ChatLoopModel(nn.Module):
     def __init__(self, tokenModel, tokenModel2):
@@ -172,9 +178,9 @@ class ChatLoopModel(nn.Module):
         self.tokenModel2 = tokenModel2
 
     def forward(self,
-                input_ids:torch.LongTensor,
-                encoder_hidden_states:torch.LongTensor,
-                attention_mask:torch.LongTensor):
+                input_ids: torch.LongTensor,
+                encoder_hidden_states: torch.LongTensor,
+                attention_mask: torch.LongTensor):
         prepare_input_ids = input_ids
 
         # keep track of which dequence are already finished
@@ -194,7 +200,7 @@ class ChatLoopModel(nn.Module):
                 prepare_input_ids = input_ids[:, -1:]
             i += 1
             if torch.is_nonzero(is_first_forward):
-                this_peer_finished, input_ids, attention_mask, unfinished_sequence, new_past_key_values= self.tokenModel(
+                this_peer_finished, input_ids, attention_mask, unfinished_sequence, new_past_key_values = self.tokenModel(
                     input_ids=input_ids,
                     prepare_input_ids=prepare_input_ids,
                     encoder_hidden_states=encoder_hidden_states,
@@ -223,9 +229,12 @@ class ChatLoopModel(nn.Module):
             past_key_values = tmp_past_key_values
         return input_ids
 
+
 """
     generateModel, 由它触发loop
 """
+
+
 class ChatGenerateModel(nn.Module):
     def __init__(self, loopModel, origin_model, tokenizer):
         super(ChatGenerateModel, self).__init__()
@@ -234,22 +243,22 @@ class ChatGenerateModel(nn.Module):
         self.loopModel = loopModel
 
     def forward(self,
-                input_ids:torch.LongTensor,
-                encoder_hidden_states:torch.LongTensor,
-                attention_mask:torch.LongTensor,
-                max_length:int,
-                num_beams:int,
-                do_sample:bool,
-                top_p:float,
-                temperature:float):
+                input_ids: torch.LongTensor,
+                encoder_hidden_states: torch.LongTensor,
+                attention_mask: torch.LongTensor,
+                max_length: int,
+                num_beams: int,
+                do_sample: bool,
+                top_p: float,
+                temperature: float):
         kwargs = {
             "input_ids": input_ids,
-            "attention_mask":attention_mask,
-            "max_length":max_length,
-            "num_beams":num_beams,
-            "do_sample":do_sample,
+            "attention_mask": attention_mask,
+            "max_length": max_length,
+            "num_beams": num_beams,
+            "do_sample": do_sample,
             "top_p": top_p,
-            "temperature":temperature
+            "temperature": temperature
         }
         generation_config = self.model.generation_config
         generation_config = copy.deepcopy(generation_config)
@@ -264,20 +273,24 @@ class ChatGenerateModel(nn.Module):
         model_kwargs["use_cache"] = generation_config.use_cache
         model_kwargs["encoder_hidden_states"] = encoder_hidden_states
 
-        input_ids, model_kwargs  = self.model._expand_inputs_for_generation(
+        input_ids, model_kwargs = self.model._expand_inputs_for_generation(
             input_ids=input_ids,
-            expand_size = generation_config.num_return_sequences,
+            expand_size=generation_config.num_return_sequences,
             is_encoder_decoder=False,
             **model_kwargs,
         )
         return self.loopModel(
             input_ids=input_ids,
             encoder_hidden_states=model_kwargs["encoder_hidden_states"],
-            attention_mask = model_kwargs["attention_mask"]
+            attention_mask=model_kwargs["attention_mask"]
         )
+
+
 """
     总模型：包装ChatGenerateModel
 """
+
+
 class ChatModel(nn.Module):
     def __init__(self,
                  loopModel,
@@ -305,7 +318,7 @@ class ChatModel(nn.Module):
         inputs = {
             "input_ids": input_ids,
             "encoder_hidden_states": encoder_hidden_states,
-            "attention_mask":attention_mask
+            "attention_mask": attention_mask
         }
         gen_kwargs = {
             "max_length": self.max_length,
@@ -316,6 +329,7 @@ class ChatModel(nn.Module):
         }
         outputs = self.generateModel(**inputs, **gen_kwargs)
         return outputs
+
 
 def export_torchscript(parser=None):
     if parser is not None:
@@ -330,11 +344,11 @@ def export_torchscript(parser=None):
         MP = r"G:\dongyongfei786\donut-tutorial\donut-save-hf\epoch_10_ned_0.008969717364156379"
         SAVE_MP = "./save_torchscript_path"
         max_length = 768
-        task_prompt ="<s_cord-v2>"
-        image_size = [1280,960]
+        task_prompt = "<s_cord-v2>"
+        image_size = [1280, 960]
         image_path = r"J:\data\document-intelligence\ICDAR-2019-SROIE-master\data\img\000.jpg"
 
-    #device = "cuda" if torch.cuda.is_available() else "cpu"
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "cpu"
     print(f"device:{device}")
 
@@ -352,12 +366,12 @@ def export_torchscript(parser=None):
 
         image_data = Image.open(image_path).convert("RGB")
         save_torchscript, do_inference = False, True
-        save_encoder_torchscript  = "encoder_ts.pth"
+        save_encoder_torchscript = "encoder_ts.pth"
         pixel_values = processor(image_data, return_tensor="pt").pixel_values
         # pixel_values = torch.randn(1, 3, 1024, 1024)
 
         pixel_values = torch.randn(1, 3, image_size[0], image_size[1])
-        feature_len = int((image_size[0]/32) * (image_size[1]/32))
+        feature_len = int((image_size[0] / 32) * (image_size[1] / 32))
 
         print("========= step1.1 trace encoder! ==========")
         encoder_model = torch.jit.trace(encoder.to(device), pixel_values.to(device), strict=False)
@@ -412,12 +426,12 @@ def export_torchscript(parser=None):
         ]
         prepare_input_ids = input_ids[:, -1:]
         traced_token_model_2 = torch.jit.trace(tokenModel.to(device),
-                                             (input_ids.to(device),
-                                              prepare_input_ids.to(device),
-                                              encoder_hidden_states.to(device),
-                                              attention_mask.to(device),
-                                              unfinshed_sequence.to(device),
-                                              past_key_values)).to(device)
+                                               (input_ids.to(device),
+                                                prepare_input_ids.to(device),
+                                                encoder_hidden_states.to(device),
+                                                attention_mask.to(device),
+                                                unfinshed_sequence.to(device),
+                                                past_key_values)).to(device)
         if save_torchscript:
             traced_token_model_2.save("decoder_init.pth")
         print(f"========= step2.2 trace token_model_2 finished! ==========")
@@ -448,7 +462,7 @@ def export_torchscript(parser=None):
 
         # 验证trace loopmodel
         trace_loop_model_output = loopModel(
-            input_ids = input_ids.to(device),
+            input_ids=input_ids.to(device),
             attention_mask=attention_mask.to(device),
             encoder_hidden_states=encoder_hidden_states.to(device)
         )
@@ -471,7 +485,7 @@ def export_torchscript(parser=None):
                                       (pixel_values.to(device),
                                        decoder_input_ids.to(device),
                                        attention_mask.to(device)
-                                      )).to(device)
+                                       )).to(device)
         print(f"========= step4.1 trace chat model finish! ==========")
         trace_model.save(os.path.join(SAVE_MP, "model.pt"))
         print(f'========= step4.2 save model: {os.path.join(SAVE_MP, "model.pt")} ==========')
@@ -480,13 +494,14 @@ def export_torchscript(parser=None):
         for i in range(1):
             t1 = time.time()
             if device == "cuda":
-                print(f"cuda memory: {torch.cuda.memory_allocated()/1000/1000/1000}")
+                print(f"cuda memory: {torch.cuda.memory_allocated() / 1000 / 1000 / 1000}")
             output = trace_model(pixel_values.to(device), input_ids.to(device), attention_mask.to(device))
             print(f"output:{output}")
             print("".join(processor.tokenizer.convert_ids_to_tokens(output[0])))
             print(f"time {i} : {time.time() - t1}")
 
         print("Done!")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="export-ts")
@@ -497,5 +512,5 @@ if __name__ == "__main__":
     parser.add_argument("--test_image_path", type=str, help="test_image_path")
     parser.add_argument("--max_length", type=int, help="max_length")
 
-    #export_torchscript(parser)
+    # export_torchscript(parser)
     export_torchscript()
