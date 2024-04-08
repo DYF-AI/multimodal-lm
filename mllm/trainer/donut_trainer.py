@@ -14,8 +14,8 @@ from nltk import edit_distance
 from pytorch_lightning import Callback
 from transformers import GenerationConfig, Seq2SeqTrainingArguments, DonutProcessor, VisionEncoderDecoderConfig, \
     VisionEncoderDecoderModel, Seq2SeqTrainer, EarlyStoppingCallback
-from multimodallm.collator import DataCollatorForGeneration
-from multimodallm.utils.data_utils import convert_json_key_to_id, token2json, preprocess
+from mllm.collator import DataCollatorForGeneration
+from mllm.utils.data_utils import convert_json_key_to_id, token2json, preprocess
 
 
 class GenSeq2SeqTrainer(Seq2SeqTrainer):

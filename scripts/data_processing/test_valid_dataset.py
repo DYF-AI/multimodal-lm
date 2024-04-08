@@ -17,7 +17,7 @@ import datasets
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from transformers import DonutProcessor
-from multimodallm.utils.data_utils import preprocess
+from mllm.utils.data_utils import preprocess
 
 # train_key, validation_key, test_key = "train", "validation", "test"
 DP = "J:/data/mllm-data/mllm-pretrain-data"

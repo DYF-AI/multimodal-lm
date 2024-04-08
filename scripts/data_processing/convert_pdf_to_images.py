@@ -1,8 +1,8 @@
 import os
 from tqdm import tqdm
 import multiprocessing
-from multimodallm.utils.image_utils import load_image, pdf_to_images
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.image_utils import load_image, pdf_to_images
+from mllm.utils.file_utils import getAllFiles
 
 """
     批量将pdf转成图片

@@ -13,7 +13,7 @@ from datasets import Dataset, DatasetDict
 from datasets.arrow_writer import ArrowWriter
 from tqdm import tqdm
 
-from multimodallm.utils.image_utils import load_image
+from mllm.utils.image_utils import load_image
 
 """
     #TODO

@@ -3,9 +3,9 @@ import time
 import json
 from tqdm import tqdm
 import multiprocessing
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.file_utils import getAllFiles
 from paddleocr import PaddleOCR
-from multimodallm.ocr_system.ocr_infer import ocr_predict
+from mllm.ocr_system.ocr_infer import ocr_predict
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
 

@@ -2,8 +2,8 @@ import os.path
 import multiprocessing
 from multiprocessing import Process
 from tqdm import tqdm
-from multimodallm.utils.image_utils import load_image, pdf_to_images
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.image_utils import load_image, pdf_to_images
+from mllm.utils.file_utils import getAllFiles
 
 """
     测试读取图片

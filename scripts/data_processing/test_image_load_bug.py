@@ -2,7 +2,7 @@ import os
 import cv2
 import shutil
 import numpy as np
-from multimodallm.utils.image_utils import load_image
+from mllm.utils.image_utils import load_image
 from PyQt5.QtGui import QImage, QCursor, QPixmap, QImageReader
 
 """

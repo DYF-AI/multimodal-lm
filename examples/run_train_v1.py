@@ -1,6 +1,6 @@
 import os
 
-from multimodallm.collator.custom_collator import custom_collate
+from mllm.collator.custom_collator import custom_collate
 
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 import sys
@@ -19,9 +19,9 @@ import pytorch_lightning as pl
 
 sys.path.append("../")
 
-from multimodallm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTrainer, SaveModelCallback
-from multimodallm.utils.data_utils import preprocess
-from multimodallm.utils.data_utils import trans_platform
+from mllm.trainer import CustomDonutModelHFTrainer, CustomDonutModelPLTrainer, SaveModelCallback
+from mllm.utils.data_utils import preprocess
+from mllm.utils.data_utils import trans_platform
 
 os.environ["WANDB_API_KEY"] = "927e1a602dfef7063ed62c26589b2cd5f8dd189f"
 os.environ["WANDB_MODE"] = "offline"

@@ -13,7 +13,7 @@ import shutil
 import random
 
 from tqdm import tqdm
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.file_utils import getAllFiles
 
 
 

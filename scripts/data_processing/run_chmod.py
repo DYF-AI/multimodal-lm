@@ -7,7 +7,7 @@ import os
 import stat
 from tqdm import tqdm
 
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.file_utils import getAllFiles
 
 
 def chmod_files(file_root: str):

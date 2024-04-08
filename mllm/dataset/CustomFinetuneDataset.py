@@ -4,8 +4,8 @@ import datasets
 from torch.utils.data import Dataset
 from transformers import DonutProcessor
 
-from multimodallm.utils import json2token
-from multimodallm.utils.image_utils import load_image, load_pil_image
+from mllm.utils import json2token
+from mllm.utils.image_utils import load_image, load_pil_image
 
 """
     原生的torch Dataset

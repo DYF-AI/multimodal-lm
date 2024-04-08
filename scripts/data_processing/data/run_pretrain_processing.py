@@ -8,8 +8,8 @@ import pandas as pd
 import datasets
 from datasets.arrow_writer import ArrowWriter
 
-from multimodallm.ocr_system.ocr_info import PicInfo
-from multimodallm.utils.data_utils import preprocess
+from mllm.ocr_system.ocr_info import PicInfo
+from mllm.utils.data_utils import preprocess
 
 
 """
@@ -18,7 +18,7 @@ from multimodallm.utils.data_utils import preprocess
     2. processing_arrow_data: meta_data -> arrow_data
 """
 
-from multimodallm.utils.file_utils import getAllFiles
+from mllm.utils.file_utils import getAllFiles
 
 
 def get_ocr_rows_text(ocr_rows):

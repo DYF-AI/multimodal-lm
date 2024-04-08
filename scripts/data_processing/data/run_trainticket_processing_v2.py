@@ -8,7 +8,7 @@ from datasets import load_dataset
 from datasets.arrow_writer import ArrowWriter
 from datasets import Dataset, DatasetDict
 
-from multimodallm.utils.image_utils import load_image
+from mllm.utils.image_utils import load_image
 
 dataset_features = datasets.Features(
     {
