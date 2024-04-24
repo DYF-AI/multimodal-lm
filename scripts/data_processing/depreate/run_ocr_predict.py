@@ -5,7 +5,7 @@ from tqdm import tqdm
 import multiprocessing
 from mllm.utils.file_utils import getAllFiles
 from paddleocr import PaddleOCR
-from mllm.ocr_system.ocr_infer import ocr_predict
+from mllm.ocr_system.ocr_predict import ocr
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
 
@@ -51,7 +51,7 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
         writer2 = open(save_fileState, "w", encoding="utf-8")
         for index, image_file in enumerate(tqdm(all_image_files)):
             print(image_file)
-            ocr_result = ocr_predict(image_file, ocr=ocr)
+            ocr_result = ocr(image_file, ocr=ocr)
             if len(ocr_result) == 0: continue
             image_file_name_split = ocr_result[0].split("/")
             image_file_name = image_file_name_split[-2] + "/" + image_file_name_split[-1]
@@ -66,7 +66,7 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
         pool = multiprocessing.Pool(processes=6)
         result_queue = multiprocessing.Manager().Queue()
         for image_file in tqdm(all_image_files):
-            pool.apply_async(func=ocr_predict, args=(image_file, ocr,), callback=result_queue.put)
+            pool.apply_async(func=ocr, args=(image_file, ocr,), callback=result_queue.put)
             time.sleep(0.5)
         pool.close()
         pool.join()
@@ -80,8 +80,8 @@ def run_ocr_predict(image_root:str, use_mp=True, predicted_file:str=None):
     return all_ocr_reulsts
 
 def test_ocr_predict():
-    image_file = "J:/data/mllm-data/crawler-data/image/电脑配置单/0df431adcbef76091cf9b1eb2edda3cc7dd99ed7.jpg"
-    result = ocr_predict(image_file=image_file)
+    image_file = "K:/dataset/mllm-data/mllm-pretrain-data/test/crawler-data-保单材料/158462813.png"
+    result = ocr(image_file=image_file)
     print(result)
 
 
@@ -118,8 +118,8 @@ def test_run_ocr_predict():
 
 
 if __name__ == "__main__":
-    # test_ocr_predict()
-    test_run_ocr_predict()
+    test_ocr_predict()
+    #test_run_ocr_predict()
 
 
 

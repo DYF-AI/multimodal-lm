@@ -2,7 +2,7 @@ from paddleocr import PaddleOCR
 from paddleocr.tools.infer import predict_system
 from mllm.utils.image_utils import load_image
 
-def ocr_predict(image_file: str, ocr: predict_system.TextSystem = None):
+def ocr(image_file: str, ocr: predict_system.TextSystem = None):
     image_data, _ = load_image(image_file, return_chw=False)
     if ocr is None:
         ocr = PaddleOCR(
