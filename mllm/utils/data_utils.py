@@ -4,6 +4,13 @@ from typing import Any
 import numpy as np
 import sys
 
+def ocr_rows_text(ocr_rows):
+    rows_text = list()
+    for row in ocr_rows:
+        row_text = [box.bbox_text for box in row]
+        rows_text.append(" ".join(row_text))
+    # 在donut-tokenizer中"\n"会被处理成空格, 需额外增加特定的换行符号"</n>"
+    return "</n>".join(rows_text)
 
 def trans_platform(path, win="J:/", linux="/mnt/j/"):
     new_path = path.replace("\\", "/").replace(win, linux)

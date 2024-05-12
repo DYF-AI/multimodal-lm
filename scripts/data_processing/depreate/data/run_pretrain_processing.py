@@ -9,8 +9,7 @@ import datasets
 from datasets.arrow_writer import ArrowWriter
 
 from mllm.ocr_system.ocr_info import PicInfo
-from mllm.utils.data_utils import preprocess
-
+from mllm.utils.data_utils import preprocess, ocr_rows_text
 
 """
     预训练数据处理
@@ -21,13 +20,6 @@ from mllm.utils.data_utils import preprocess
 from mllm.utils.file_utils import getAllFiles
 
 
-def get_ocr_rows_text(ocr_rows):
-    rows_text = list()
-    for row in ocr_rows:
-        row_text = [box.bbox_text for box in row]
-        rows_text.append(" ".join(row_text))
-    # 在donut-tokenizer中"\n"会被处理成空格, 需额外增加特定的换行符号"</n>"
-    return "</n>".join(rows_text)
 
 def ocr_res_pop(ocr_rows, points_num=2):
     new_ocr_res = []
@@ -89,8 +81,8 @@ def processing_meta_data(data_root: str, save_meta_data: str):
                 meta_data["图片相对路径"].append(relative_image_path)
                 picInfo = PicInfo.from_ocr_res(adapte_ocr_data(ocr_res, file_id))
                 meta_data["ocr结果"].append(ocr_res)
-                ocr_rows_text = get_ocr_rows_text(picInfo.rows)
-                meta_data["ocr成行"].append(ocr_rows_text)
+                rows_text = ocr_rows_text(picInfo.rows)
+                meta_data["ocr成行"].append(rows_text)
                 meta_data["类型"].append(type)
                 meta_data["用途"].append(usage)
     df = pd.DataFrame(meta_data)
