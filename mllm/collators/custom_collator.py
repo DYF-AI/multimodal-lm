@@ -76,7 +76,7 @@ class DataCollatorForGeneration(DataCollatorMixin):
                 image = Image.open(feature["image"]).convert("RGB")
                 angle = feature["angle"]
                 if angle:
-                    image = image.rotate(360 - angle)
+                    image = image.rotate(360 - angle, expand=True)
                 image_list.append(image)
             random_padding = features[0]["random_padding"]
             pixel_values = self.processor(image_list, random_padding=random_padding,

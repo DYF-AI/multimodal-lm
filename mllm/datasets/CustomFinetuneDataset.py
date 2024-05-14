@@ -50,7 +50,7 @@ class CustomDonutFinetuneDataset(Dataset):
 
 if __name__ == '__main__':
     MP = "J:/model/pretrained-model/torch\donut-base"
-    train_dataset_file = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/train.arrow"
+    train_dataset_file = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/train.arrow"
     processor = DonutProcessor.from_pretrained(MP)
     train_dataset = CustomDonutFinetuneDataset(train_dataset_file, processor)
     print(train_dataset[0])

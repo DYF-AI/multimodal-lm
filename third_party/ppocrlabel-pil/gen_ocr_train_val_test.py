@@ -117,18 +117,18 @@ if __name__ == "__main__":
         "--datasetRootPath",
         type=str,
         default="../train_data/",
-        help="path to the dataset marked by ppocrlabel-pil, E.g, dataset folder named 1,2,3..."
+        help="path to the datasets marked by ppocrlabel-pil, E.g, datasets folder named 1,2,3..."
     )
     parser.add_argument(
         "--detRootPath",
         type=str,
         default="../train_data/det",
-        help="the path where the divided detection dataset is placed")
+        help="the path where the divided detection datasets is placed")
     parser.add_argument(
         "--recRootPath",
         type=str,
         default="../train_data/rec",
-        help="the path where the divided recognition dataset is placed"
+        help="the path where the divided recognition datasets is placed"
     )
     parser.add_argument(
         "--detLabelFileName",
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         "--recImageDirName",
         type=str,
         default="crop_img",
-        help="the name of the folder where the cropped recognition dataset is located"
+        help="the name of the folder where the cropped recognition datasets is located"
     )
     args = parser.parse_args()
     genDetRecTrainVal(args)

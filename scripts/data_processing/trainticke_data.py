@@ -50,7 +50,7 @@ def processing_meta_data(data_root: str, save_meta_data: str):
 
 
 if __name__ == '__main__':
-    DATA_ROOT = "M:/dataset/mllm-data/mllm-finetune-data/trainticket/"
+    DATA_ROOT = "M:/datasets/mllm-data/mllm-finetune-data/trainticket/"
     SAVE_FILE = "M:/dataset/mllm-data/mllm-finetune-data/trainticket/metadata.jsonl"
 
     processing_meta_data(DATA_ROOT, SAVE_FILE)

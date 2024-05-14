@@ -1,6 +1,6 @@
 import os
 
-from mllm.collator.custom_collator import custom_collate
+from mllm.collators.custom_collator import custom_collate
 
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 import sys
@@ -52,9 +52,9 @@ if __name__ == "__main__":
             "start_token": "<s_ocr_pretrain>",
             "image_size": [1024, 1024],
             "expand_vocab": ["<s_ocr_pretrain>", "</s_ocr_pretrain>", "<s_text_sequence>", "</s_text_sequence>"],
-            "train_dataset": "J:/dataset/mllm-data/mllm-pretrain-data/train.arrow",
-            "validation_dataset": "J:/dataset/mllm-data/mllm-pretrain-data/validation.arrow",
-            "test_dataset":"J:/dataset/mllm-data/mllm-pretrain-data/test.arrow",
+            "train_dataset": "J:/datasets/mllm-data/mllm-pretrain-data/train.arrow",
+            "validation_dataset": "J:/datasets/mllm-data/mllm-pretrain-data/validation.arrow",
+            "test_dataset":"J:/datasets/mllm-data/mllm-pretrain-data/test.arrow",
             "model_save_path": os.path.join("J:/model/mllm-model/donut-large-pretrain", date.strftime('%Y%m%d')),
             #"model_save_path": os.path.join(r"J:\model\mllm-model\donut-pretrain", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 2,
@@ -85,9 +85,9 @@ if __name__ == "__main__":
                              "<s_ticket_num>", "</s_ticket_num>","<s_date>", "</s_date>", "<s_train_num>", "</s_train_num>",
                              "<s_trainticket>",
                              ],
-            "train_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/train.arrow",
-            "validation_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test.arrow",
-            "test_dataset": "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test_cache.arrow",
+            "train_dataset": "J:/datasets/mllm-data/mllm-finetune-data/trainticket/train.arrow",
+            "validation_dataset": "J:/datasets/mllm-data/mllm-finetune-data/trainticket/test.arrow",
+            "test_dataset": "J:/datasets/mllm-data/mllm-finetune-data/trainticket/test_cache.arrow",
             "model_save_path": os.path.join("J:/model/mllm-model/train_ticket", date.strftime('%Y%m%d')),
             "per_device_train_batch_size": 1,
             "per_device_eval_batch_size": 1, # huggingface 调用了共享GPU内存?

@@ -56,9 +56,9 @@ def processing_arrow_data(metadata_file: str, save_arrow_path: str):
 
 
 if __name__ == "__main__":
-    train_metadata_file = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/train/metadata.jsonl"
-    test_metadata_file = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test/metadata.jsonl"
-    save_arrow_root = "J:/dataset/mllm-data/mllm-finetune-data/trainticket"
+    train_metadata_file = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/train/metadata.jsonl"
+    test_metadata_file = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/test/metadata.jsonl"
+    save_arrow_root = "J:/datasets/mllm-data/mllm-finetune-data/trainticket"
 
     processing_arrow_data(train_metadata_file, os.path.join(save_arrow_root, "train.arrow"))
     processing_arrow_data(test_metadata_file, os.path.join(save_arrow_root, "test.arrow"))

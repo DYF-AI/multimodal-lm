@@ -8,7 +8,7 @@ import pandas as pd
 import datasets
 from datasets.arrow_writer import ArrowWriter
 
-from mllm.ocr_system.ocr_info import PicInfo
+from mllm.utils.ocr_utils import PicInfo
 from mllm.utils.data_utils import preprocess, ocr_rows_text
 
 """

@@ -55,14 +55,14 @@ def build_data(metadata_path:str, image_path:str, output_path:str):
 
 
 if __name__ == "__main__":
-    #train_image_path = "/mnt/j/dataset/document-intelligence/EATEN数据集/dataset_trainticket/train/hcp_aug_2"
-    train_image_path = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/train"
-    save_arrow_root = "J:/dataset/mllm-data/mllm-finetune-data/trainticket"
+    #train_image_path = "/mnt/j/datasets/document-intelligence/EATEN数据集/dataset_trainticket/train/hcp_aug_2"
+    train_image_path = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/train"
+    save_arrow_root = "J:/datasets/mllm-data/mllm-finetune-data/trainticket"
     train_metadata_path = os.path.join(train_image_path, "metadata.jsonl")
     train_output_path = os.path.join(save_arrow_root, "train_cache.arrow")
 
-    #test_image_path = "/mnt/j/dataset/document-intelligence/EATEN数据集/dataset_trainticket/test"
-    test_image_path = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test"
+    #test_image_path = "/mnt/j/datasets/document-intelligence/EATEN数据集/dataset_trainticket/test"
+    test_image_path = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/test"
     test_metadata_path = os.path.join(test_image_path, "metadata.jsonl")
     test_output_path = os.path.join(save_arrow_root, "test_cache.arrow")
 

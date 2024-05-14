@@ -7,7 +7,7 @@ import os
 
 from tqdm import tqdm
 
-from mllm.ocr_system.ocr_info import PicInfo
+from mllm.utils.ocr_utils import PicInfo
 from mllm.utils.data_utils import ocr_rows_text
 
 def adapte_ocr_data(ocr_res, file_id):
@@ -68,7 +68,7 @@ def processing_meta_data(data_root: str, save_meta_data: str):
 
 
 if __name__ == '__main__':
-    DATA_ROOT = "M:/dataset/mllm-data/mllm-pretrain-data/"
+    DATA_ROOT = "M:/datasets/mllm-data/mllm-pretrain-data/"
     SAVE_FILE = "M:/dataset/mllm-data/mllm-pretrain-data/metadata.jsonl"
 
     processing_meta_data(DATA_ROOT, SAVE_FILE)

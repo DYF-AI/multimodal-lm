@@ -4,7 +4,7 @@
 import time
 import json
 
-from mllm.ocr_system.ocr_info import PicInfo
+from mllm.utils.ocr_utils import PicInfo
 
 """
     测试ocr成行模块

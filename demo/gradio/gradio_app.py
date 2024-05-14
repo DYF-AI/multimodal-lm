@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
 
     # test
-    #image_path = "J:/dataset/mllm-data/mllm-finetune-data/trainticket/test/IMG_3840.jpg"
+    #image_path = "J:/datasets/mllm-data/mllm-finetune-data/trainticket/test/IMG_3840.jpg"
     image_path = "2_Book2_5_in_close_10.jpg"
     image_data = Image.open(image_path).convert("RGB")
 
