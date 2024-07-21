@@ -34,7 +34,9 @@ text_only_template = "A chat between a curious user and an artificial intelligen
 
 while True:
     #image_path = input("image path >>>>> ")
-    image_path = "/mnt/n/dataset/增值税发票/image/b76.jpg"
+    # query = '这是一张增值税发票,请详细描述这张图片的内容'
+    #image_path = "/mnt/n/dataset/增值税发票/image/b76.jpg"
+    image_path =  "N:/dataset/增值税发票/image/b3.jpg"
     if image_path == '':
         print('You did not enter image path, the following will be a plain text conversation.')
         image = None
