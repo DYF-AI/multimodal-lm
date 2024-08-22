@@ -132,17 +132,17 @@ class ChatGLM4Tokenizer(PreTrainedTokenizer):
 
     def get_prefix_tokens(self):
         prefix_tokens = [self.convert_tokens_to_ids("[gMASK]"), self.convert_tokens_to_ids("<sop>")]
-        return prefix_tokens
+        return prefix_tokens    # prefix: [gMASK]<sop>  --> [151331,151333], prefix_tokens的作用? GLM框架模板：[gMASK] [SOP] <|system|> '.'.join(ocr_texts) <|user|> question <|assistant|> answer <|eos|>
 
     def build_single_message(self, role, metadata, message, tokenize=True, message_prefix=None):
-        assert role in ["system", "user", "assistant", "observation"], role
+        assert role in ["system", "user", "assistant", "observation"], role # 4种角色
         if tokenize:
             role_tokens = [self.convert_tokens_to_ids(f"<|{role}|>")] + self.tokenizer.encode(f"{metadata}\n",
-                                                                                              disallowed_special=())
+                                 disallowed_special=()) # role_tokens="<|uesr|>\n"
             message_tokens = self.tokenizer.encode(message, disallowed_special=())
             if message_prefix is not None:
-                message_tokens = message_prefix + message_tokens
-            tokens = role_tokens + message_tokens
+                message_tokens = message_prefix + message_tokens  # '<|begin_of_image|> <|endoftext|> <|end_of_image|> 请详细描述图片中的文本信息'
+            tokens = role_tokens + message_tokens   # 输入的字符串: '<|user|> \n<|begin_of_image|> <|endoftext|> <|end_of_image|> 请详细描述图片中的文本信息'
             return tokens
         else:
             return str(f"<|{role}|>{metadata}\n{message}")
@@ -219,7 +219,7 @@ class ChatGLM4Tokenizer(PreTrainedTokenizer):
                         message,
                         tokenize=tokenize,
                         message_prefix=message_prefix
-                    )
+                    )  # [151336, 198, 151339, 151329, 151340, 98964, 101318, 100395, 100736, 98992, 103231, 98870], prompt:98964, 101318, 100395, 100736, 98992, 103231, 98870
                     if tokenize:
                         input_ids.extend(input)
                     else:
@@ -229,7 +229,7 @@ class ChatGLM4Tokenizer(PreTrainedTokenizer):
                     input_ids.extend([self.convert_tokens_to_ids("<|assistant|>")])
                 else:
                     input_message += "<|assistant|>"
-            return {"input": input_ids if tokenize else input_message, "image": input_image}
+            return {"input": input_ids if tokenize else input_message, "image": input_image}  # '[gMASK] <sop> <|user|> \n<|begin_of_image|> <|endoftext|> <|end_of_image|> 请详细描述图片中的文本信息 <|assistant|>'
 
         # Main logic to handle different conversation formats
         if isinstance(conversation, list) and all(isinstance(i, dict) for i in conversation):

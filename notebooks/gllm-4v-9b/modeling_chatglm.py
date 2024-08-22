@@ -195,7 +195,7 @@ def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Ten
     x_out2 = x_out2.flatten(3)
     return torch.cat((x_out2, x_pass), dim=-1)
 
-
+# RMSNorm
 class RMSNorm(torch.nn.Module):
     def __init__(self, normalized_shape, eps=1e-5, device=None, dtype=None, **kwargs):
         super().__init__()
@@ -965,25 +965,25 @@ class ChatGLMModel(ChatGLMPreTrainedModel):
             if not is_empty(images):  # multi-modality
                 image_size: int = self.config.vision_config['image_size']   # 配置的图片尺寸: 1120
                 patch_size: int = self.config.vision_config['patch_size']   # 配置的patchsize: 14
-                num_patches = (image_size // patch_size // 2) ** 2          # 计算出patch的数量, 为什么还有除2? 那patch_size不相当于等于28了?
+                num_patches = (image_size // patch_size // 2) ** 2          # 计算出patch的数量, 为什么还有除2? 因为进行patch后，又对patch的特征就行卷积核为2*2,步长为2的卷积
                 assert len(input_ids) == len(images), f"{len(input_ids)} {len(images)}"
-                inputs_embeds = self.embedding(input_ids)
+                inputs_embeds = self.embedding(input_ids)       # 得到文本模态的embed, (batch_size, seq_len, hidden_size)
 
                 images = images.to(dtype=inputs_embeds.dtype)
-                images_features = self.vision(images)
+                images_features = self.vision(images) # images_features的shape:(1, 1602, 4096)   # 得到视觉模态的embed, (batchsize, num_pathes+2, hidden)
 
                 if position_ids is None:
                     position_ids = self.get_position_ids(input_ids, device=inputs_embeds.device)
                 new_input_embeds, new_position_ids = [], []
 
                 for i in range(len(input_ids)):
-                    input_id = input_ids[i].tolist()
+                    input_id = input_ids[i].tolist()    # 输入prompt的token_id
                     boi_token_pos, eoi_token_pos = input_id.index(self.config.boi_token_id), input_id.index(
                         self.config.eoi_token_id)
                     assert eoi_token_pos - boi_token_pos == 2
                     new_input_embeds.append(torch.cat(
                         (inputs_embeds[i, :boi_token_pos], images_features[i].to(inputs_embeds.device),
-                         inputs_embeds[i, eoi_token_pos + 1:])))
+                         inputs_embeds[i, eoi_token_pos + 1:])))   #
                     new_position_ids.append(torch.cat(
                         (position_ids[i, :boi_token_pos + 1], position_ids[i, boi_token_pos + 1].repeat(num_patches),
                          position_ids[i, eoi_token_pos:])

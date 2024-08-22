@@ -133,11 +133,11 @@ class GLU(nn.Module):
         self.dense_4h_to_h = nn.Linear(config.ffn_hidden_size, config.hidden_size, bias=False)
 
     def forward(self, x):
-        x = self.linear_proj(x)
-        x = self.act1(self.norm1(x))
-        x = self.act2(self.gate_proj(x)) * self.dense_h_to_4h(x)
+        x = self.linear_proj(x) # 又是加了个linear层, x的输入shape: (1, 1600, 4096), x的输出shape:  (1, 1600, 4096)
+        x = self.act1(self.norm1(x)) # LayerNorm+GLU激活函数
+        x = self.act2(self.gate_proj(x)) * self.dense_h_to_4h(x)  #x的输出shape:  (1, 1600, 13696)
         x = self.dense_4h_to_h(x)
-        return x
+        return x  #x的shape: (1, 1600, 4096)
 
 
 class EVA2CLIPModel(nn.Module):
@@ -154,18 +154,18 @@ class EVA2CLIPModel(nn.Module):
 
     def forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L, D)":
         x = self.patch_embedding(images)    # 经过patch_embedding操作后,x的shape为(1, 1792, 6401)
-        x = self.transformer(x)
-        x = x[:, 1:]  # 由去掉了第一个cls_token的特征, x的shape: (1, 640, 1120)
+        x = self.transformer(x)     # 经过63层的transformer-layer(LayerNorm, Attention, MLP)
+        x = x[:, 1:]  # 由去掉了第一个cls_token的特征, x的shape: (1, 6400, 1792)
 
         b, s, h = x.shape
         grid_size = int(s**0.5)
-        x = x.view(b, grid_size, grid_size, h).permute(0, 3, 1, 2)
-        x = self.conv(x)
+        x = x.view(b, grid_size, grid_size, h).permute(0, 3, 1, 2) #x的shape: (1, 1792, 80, 80)
+        x = self.conv(x)    # 又一次做卷积, 卷积核大小2x2, 步长为2, x的shape: (1, 4096, 40, 40)
 
-        x = x.flatten(2).transpose(1, 2)
-        x = self.linear_proj(x)
-        boi = self.boi.expand(x.shape[0], -1, -1)
-        eoi = self.eoi.expand(x.shape[0], -1, -1)
-        x = torch.cat((boi, x, eoi), dim=1)
+        x = x.flatten(2).transpose(1, 2) #  x的shape: (1, 1600, 4096)
+        x = self.linear_proj(x) #  x的shape: (1, 1600, 4096)
+        boi = self.boi.expand(x.shape[0], -1, -1) #  boi: (1, 1, 4096)
+        eoi = self.eoi.expand(x.shape[0], -1, -1) #  eoi: (1, 1, 4096)
+        x = torch.cat((boi, x, eoi), dim=1) #   x的shape: (1, 1602, 4096)
         x = x / self.scaling_factor
         return x
