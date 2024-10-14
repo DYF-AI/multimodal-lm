@@ -182,7 +182,8 @@ if __name__ == '__main__':
             ]
         }
     }
-    # demo_json2token_v1(json_data)
+    demo_json2token_v1(json_data)
+    print("**" * 20)
     demo_json2token_v2(json_data, prefix_list_of_dict=True)
     print("**"*20)
     demo_json2token_v2(json_data, prefix_list_of_dict=False)
