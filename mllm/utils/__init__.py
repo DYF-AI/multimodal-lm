@@ -5,6 +5,7 @@ from typing import Any
 import sys
 sys.path.append("../../")
 from mllm.utils.data_utils import json2token, token2json
+from mllm.utils.utils import *
 
 
 def cal_model_parameters(model):
