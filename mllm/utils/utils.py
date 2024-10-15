@@ -125,7 +125,7 @@ def token2jsonV2(token_str,  prefix_list_of_dict=False):
         for item in groups:
             # 提取键的前缀
             for key in item.keys():
-                prefix = key.split('-')[0]
+                prefix = key.split('-')[0] if "-" in key else "groups"
                 structured_groups[prefix].append({k.split('-', 1)[-1]: v for k, v in item.items()})
                 break
         data.update(structured_groups)
