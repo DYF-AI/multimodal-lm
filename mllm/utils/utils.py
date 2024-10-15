@@ -31,7 +31,7 @@ def json2tokenV1(obj: Any, sort_json_key: bool = False, filter_keys: List[str] =
 
 
 def json2tokenV2(data, sort_json_key=False, prefix_list_of_dict=True):
-    if sort_json_key and isinstance(data, list):
+    if sort_json_key and isinstance(data, dict):
         data = dict(sorted(data.items(), key=lambda item: item[0]))
     def parse_dict(d, prefix=''):
         tokens = []
@@ -51,17 +51,23 @@ def json2tokenV2(data, sort_json_key=False, prefix_list_of_dict=True):
             if isinstance(item, dict):
                 line_tokens = []
                 for k, v in item.items():
-                    if prefix_list_of_dict:
-                        line_tokens.append(f"{prefix}-{k}:{v}")
-                    else:
-                        line_tokens.append(f"{k}:{v}")
+                    # Use prefix if prefix_list_of_dict is True, otherwise use only the key
+                    key = f"{prefix}-{k}" if prefix_list_of_dict and prefix else k
+                    line_tokens.append(f"{key}:{v}")
                 tokens.append(", ".join(line_tokens))
             else:
                 tokens.append(f"{prefix}:{item}")
         return tokens
 
-    tokens = parse_dict(data)
-    return "\n".join(tokens)
+    # Check if data is a dictionary or list at the root level
+    if isinstance(data, dict):
+        tokens = parse_dict(data)
+    elif isinstance(data, list):
+        tokens = parse_list(data, prefix='')  # No prefix for root-level list
+    else:
+        print("Unsupported data type")
+        return str(data)
+    return "\n\n".join(tokens)
 
 
 def token2jsonV1(token_str: str) -> Any:
@@ -146,7 +152,7 @@ def demo_json2token_v1(json_data):
     json_like_tokens = json2tokenV1(json_data, sort_json_key=True, filter_keys=["票据号码", "校验码"])
     print(f"json_like_tokens:{json_like_tokens}")
     parse_json = token2jsonV1(json_like_tokens)
-    print(f"parse_json:{parse_json}, {parse_json['交款人']}")
+    print(f"parse_json:{parse_json}")
 
 
 def demo_json2token_v2(json_data, prefix_list_of_dict=False):
@@ -159,7 +165,7 @@ def demo_json2token_v2(json_data, prefix_list_of_dict=False):
 
 if __name__ == '__main__':
     # 示例使用
-    json_data = {
+    json_data_1 = {
         "材料类型": "电子发票",
         "票据代码": "50068122",
         "票据号码": "8250626222",
@@ -182,7 +188,14 @@ if __name__ == '__main__':
             ]
         }
     }
-    demo_json2token_v1(json_data)
+
+    json_data_2 =  [
+            {"项目1": "检查费", "金额": "50.00"},
+            {"项目2": "化验费", "金额": "60.00"}
+    ]
+
+    json_data = json_data_2
+    #demo_json2token_v1(json_data)
     print("**" * 20)
     demo_json2token_v2(json_data, prefix_list_of_dict=True)
     print("**"*20)
