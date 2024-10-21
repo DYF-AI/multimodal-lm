@@ -1,4 +1,6 @@
 import json
+import os.path
+import random
 import re
 from collections import defaultdict
 from typing import Any, List, Dict
@@ -54,7 +56,7 @@ def json2tokenV2(data, sort_json_key=False, prefix_list_of_dict=True):
                     # Use prefix if prefix_list_of_dict is True, otherwise use only the key
                     key = f"{prefix}-{k}" if prefix_list_of_dict and prefix else k
                     line_tokens.append(f"{key}:{v}")
-                tokens.append(", ".join(line_tokens))
+                tokens.append("\t\t".join(line_tokens))
             else:
                 tokens.append(f"{prefix}:{item}")
         return tokens
@@ -104,9 +106,9 @@ def token2jsonV2(token_str,  prefix_list_of_dict=False):
         line = line.strip()
 
         # 检查是否含有逗号
-        if ',' in line:
+        if '\t' in line:
             item = {}
-            pairs = [pair.strip() for pair in line.split(',')]
+            pairs = [pair.strip() for pair in line.split('\t')]
             for pair in pairs:
                 if ':' in pair:
                     key, value = pair.split(':', 1)
@@ -146,6 +148,38 @@ def mapping_dict_keys(obj: Any, key_mapping: Dict):
         return [mapping_dict_keys(item, key_mapping) for item in obj]
     return obj
 
+
+def load_json_file(json_file_path:str):
+    with open(json_file_path, "r", encoding="utf-8") as fi:
+        data = json.load(fi)
+    return data
+
+def save_json_file(data, save_json_file_path:str, indent=2):
+    with open(save_json_file_path, "w", encoding="utf-8") as fo:
+        fo.write(json.dumps(data, indent=indent, ensure_ascii=False))
+
+def load_jsonl_file(jsonl_file_path:str):
+    data = []
+    with open(jsonl_file_path, "r", encoding="utf-8") as fi:
+        for line in fi:
+            try:
+                line_data = json.loads(line)
+            except Exception as e:
+                print(f"line:{line}, {e}")
+                line_data = line
+            data.append(line_data)
+    return data
+
+def save_jsonl_file(data, save_jsonl_file_path:str):
+    with open(save_jsonl_file_path, "w", encoding="utf-8") as fo:
+        for row_data in data:
+            fo.write(json.dumps(row_data, ensure_ascii=False) + "\n")
+        fo.flush()
+
+def random_select_list(data:list, select_num, seed=42):
+    random.seed(seed)
+    selected_data = random.sample(data, select_num)
+    return selected_data
 
 def demo_json2token_v1(json_data):
     # 示例使用
@@ -194,7 +228,7 @@ if __name__ == '__main__':
             {"项目2": "化验费", "金额": "60.00"}
     ]
 
-    json_data = json_data_2
+    json_data = json_data_1
     #demo_json2token_v1(json_data)
     print("**" * 20)
     demo_json2token_v2(json_data, prefix_list_of_dict=True)
