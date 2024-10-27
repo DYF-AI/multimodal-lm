@@ -175,3 +175,17 @@ def preprocess_prompt(rows, processor=None, sort_key=True, eager=False, random_p
         "labels": labels,
         "target": target_sequence
     }
+
+def get_keys_from_json(data, keys=None):
+    if keys is None:
+        keys = set()  # 初始化一个空的set用来存储键
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            keys.add(key)  # 添加当前的键到set中
+            get_keys_from_json(value, keys)  # 递归处理值
+    elif isinstance(data, list):
+        for item in data:
+            get_keys_from_json(item, keys)  # 递归处理列表中的每个元素
+
+    return keys
