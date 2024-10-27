@@ -1,10 +1,8 @@
 from collections import defaultdict
 from typing import Any, Dict, List
-import json
-import pandas as pd
+import difflib
 
-
-def compare_dicts(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Dict[str, Dict[str, int]]:
+def compute_one_metric(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Dict[str, Dict[str, int]]:
     # Initialize match info dictionary
     match_info = defaultdict(lambda: {"right_num": 0, "pred_num": 0, "gt_num": 0})
 
@@ -31,7 +29,11 @@ def compare_dicts(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Dict[st
                 if idx in gt_used:
                     continue
                 # Calculate the similarity score based on matched key-value pairs
-                score = sum(1 for k, v in p_item.items() if g_item.get(k) == v)
+                #score = sum(1 for k, v in p_item.items() if g_item.get(k) == v)
+                p_item_group = "-".join([v for k, v in p_item.items()])
+                g_item_group = "-".join([g_item[k] for k in p_item.keys()])
+                score = difflib.SequenceMatcher(None, p_item_group, g_item_group).quick_ratio()
+
                 if score > best_score:
                     best_score = score
                     best_match = g_item
@@ -112,7 +114,12 @@ def demo1():
     }
 
     # Run comparison
-    match_info = compare_dicts(pred, gt)
+    match_info = compute_one_metric(pred, gt)
 
     # Print results
-    print(json.dumps(match_info, ensure_ascii=False, indent=4))
+    #print(json.dumps(match_info, ensure_ascii=False, indent=4))
+    print(match_info)
+
+
+if __name__ == '__main__':
+    demo1()
