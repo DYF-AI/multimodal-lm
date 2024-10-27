@@ -341,12 +341,12 @@ def export_torchscript(parser=None):
         image_size = args.image_size
         image_path = args.image_path
     else:
-        MP = r"G:\dongyongfei786\donut-tutorial\donut-save-hf\epoch_10_ned_0.008969717364156379"
+        MP = "/mnt/g/dongyongfei786/donut-tutorial/donut-save-hf/epoch_10_ned_0.008969717364156379"
         SAVE_MP = "./save_torchscript_path"
         max_length = 768
         task_prompt = "<s_cord-v2>"
         image_size = [1280, 960]
-        image_path = r"J:\data\document-intelligence\ICDAR-2019-SROIE-master\data\img\000.jpg"
+        image_path = "/mnt/n/data/ICDAR/ICDAR-2019/Task-SROIE/SROIE_test_images_task_3/X00016469670.jpg"
 
     # device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "cpu"
