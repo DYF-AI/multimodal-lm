@@ -11,9 +11,19 @@ CUDA_VISIBLE_DEVICES=0 swift sft \
   --save_steps 200 \
   --num_train_epochs 10 \
   --batch_size 1 \
-  --learning_rate 3e-5 \
+  --learning_rate 3e-4 \
   --lr_scheduler_type cosine \
   --sft_type lora \
   --lora_target_modules ALL \
-  --predict_with_generate True \
+  --weight_decay 0.1 \
+  --max_grad_norm 0.5 \
+  --dtype bf16 \
+  --lora_dtype bf16 \
+  --lora_rank 8 \
+  --lora_alpha 32 \
+  --lora_dropout 0.05 \
+  --do_sample False \
   --warmup_ratio 0.05 \
+
+#  --gradient_checkpointing True \
+#  --predict_with_generate True \
