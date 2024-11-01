@@ -133,7 +133,8 @@ def token2jsonV2(token_str,  prefix_list_of_dict=False):
         data.update(structured_groups)
     else:
         # prefix_list_of_dict 为 False 时，直接加入 groups
-        data["groups"] = groups
+        if len(groups) > 0:
+            data["groups"] = groups
 
     return data
 

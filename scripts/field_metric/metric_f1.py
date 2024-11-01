@@ -32,7 +32,7 @@ def compute_one_metric(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Di
                 # Calculate the similarity score based on matched key-value pairs
                 #score = sum(1 for k, v in p_item.items() if g_item.get(k) == v)
                 p_item_group = "-".join([v if v is not None else "" for k, v in p_item.items()])
-                g_item_group = "-".join([g_item[k] if g_item[k] is not None else ""  for k in p_item.keys()])
+                g_item_group = "-".join([g_item.get(k) if g_item.get(k) is not None else ""  for k in p_item.keys()])
                 score = difflib.SequenceMatcher(None, p_item_group, g_item_group).quick_ratio()
 
                 if score >= best_score:
@@ -120,6 +120,7 @@ def save_csv_file(match_info, save_file):
         for k2, v2 in v1.items():
             match_data[k2].append(v2)
     match_data_df = pd.DataFrame(match_data)
+    print(match_data_df)
     match_data_df.to_csv(save_file, index=False)
     #match_data_df.to_excel(save_file, index=False)
 
