@@ -31,11 +31,11 @@ def compute_one_metric(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Di
                     continue
                 # Calculate the similarity score based on matched key-value pairs
                 #score = sum(1 for k, v in p_item.items() if g_item.get(k) == v)
-                p_item_group = "-".join([v for k, v in p_item.items()])
-                g_item_group = "-".join([g_item[k] for k in p_item.keys()])
+                p_item_group = "-".join([v if v is not None else "" for k, v in p_item.items()])
+                g_item_group = "-".join([g_item[k] if g_item[k] is not None else ""  for k in p_item.keys()])
                 score = difflib.SequenceMatcher(None, p_item_group, g_item_group).quick_ratio()
 
-                if score > best_score:
+                if score >= best_score:
                     best_score = score
                     best_match = g_item
             if best_match:
@@ -60,9 +60,15 @@ def compute_one_metric(pred_dict: Dict[str, Any], gt_dict: Dict[str, Any]) -> Di
                     match_info_one[full_key]["gt_num"] += 1
 
     # Perform field-wise comparison
-    for key in set(pred_dict.keys()).union(set(gt_dict.keys())):
-        pred_val = pred_dict.get(key)
+    #for key in set(pred_dict.keys()).union(set(gt_dict.keys())):
+    all_keys = list(OrderedDict.fromkeys(list(pred_dict.keys()) + list(gt_dict.keys())))
+    for key in all_keys:
         gt_val = gt_dict.get(key)
+        pred_val = pred_dict.get(key)
+        if isinstance(gt_val, list) and not pred_val:
+            pred_val = [{k: None for k in item} for item in gt_val]
+        if isinstance(pred_val, list) and not gt_val:
+            gt_val = [{k: None for k in item} for item in pred_val]
 
         if isinstance(pred_val, list) and all(isinstance(i, dict) for i in pred_val) and \
                 isinstance(gt_val, list) and all(isinstance(i, dict) for i in gt_val):
@@ -114,8 +120,9 @@ def save_csv_file(match_info, save_file):
         for k2, v2 in v1.items():
             match_data[k2].append(v2)
     match_data_df = pd.DataFrame(match_data)
-    #match_data_df.to_csv(save_file, index=False)
-    match_data_df.to_excel(save_file, index=False)
+    match_data_df.to_csv(save_file, index=False)
+    #match_data_df.to_excel(save_file, index=False)
+
 def demo1():
     # Input data
     pred = {
@@ -155,9 +162,9 @@ def demo1():
 
     # Run comparison
     # match_info_one = compute_one_metric(pred, gt)
-    match_info = compute_f1_metric([pred, pred], [gt, gt])
+    match_info = compute_f1_metric([{}, pred, pred], [gt, gt, gt])
 
-    save_csv_file(match_info, "test.xlsx")
+    save_csv_file(match_info, "test.csv")
 
     # Print results
     #print(json.dumps(match_info, ensure_ascii=False, indent=4))
