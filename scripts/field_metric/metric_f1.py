@@ -104,9 +104,9 @@ def compute_f1_metric(preds:list, gts:list):
     match_info["total"]["pred_num"] = total_pred_num
     match_info["total"]["gt_num"] = total_gt_num
     p, r = total_right_num / total_pred_num, total_right_num / total_gt_num
-    match_info["total"]["precision"] = p
-    match_info["total"]["recall"] = r
-    match_info["total"]["f1"] = 2*p*r/(p+r)
+    match_info["total"]["precision"] = round(p, 4)
+    match_info["total"]["recall"] = round(r, 4)
+    match_info["total"]["f1"] = round(2*p*r/(p+r), 4)
     return match_info
 
 
