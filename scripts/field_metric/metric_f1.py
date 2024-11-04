@@ -122,7 +122,10 @@ def save_csv_file(match_info, save_file):
     match_data_df = pd.DataFrame(match_data)
     print(match_data_df)
     match_data_df.to_csv(save_file, index=False)
-    #match_data_df.to_excel(save_file, index=False)
+    if save_file.endswith("xlsx"):
+        match_data_df.to_excel(save_file, index=False)
+    else:
+        match_data_df.to_csv(save_file, index=False)
 
 def demo1():
     # Input data
@@ -131,7 +134,7 @@ def demo1():
         "票据代码": "50068122",
         "票据号码": "8250626222",
         "校验码": "edfdf4",
-        "交款人": "冯昱硕",
+        "交款人": "冯xx",
         "开票日期": "2023年03月16日",
         "费用明细": [
             {"细项名称": "卫生材料费", "金额": "8.98"},
@@ -149,7 +152,7 @@ def demo1():
         "票据代码": "50068122",
         "票据号码": "8250626222",
         "校验码": "edfdf4",
-        "交款人": "冯昱硕",
+        "交款人": "冯xx",
         "开票日期": "2023年03月16日",
         "费用明细": [
             {"细项名称": "卫生材料费", "金额": "8.98"},
@@ -165,7 +168,7 @@ def demo1():
     # match_info_one = compute_one_metric(pred, gt)
     match_info = compute_f1_metric([{}, pred, pred], [gt, gt, gt])
 
-    save_csv_file(match_info, "test.csv")
+    save_csv_file(match_info, "test.xlsx")
 
     # Print results
     #print(json.dumps(match_info, ensure_ascii=False, indent=4))
