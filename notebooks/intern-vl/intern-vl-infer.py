@@ -9,7 +9,8 @@ from torchvision.transforms.functional import InterpolationMode
 from transformers import AutoModel, AutoTokenizer
 
 # If you want to load a model using multiple GPUs, please refer to the `Multiple GPUs` section.
-path = "N:/model/OpenGVLab/InternVL2-8B"
+#path = "N:/model/OpenGVLab/InternVL2-8B"
+path = "/mnt/n/model/OpenGVLab/InternVL2-2B"
 trust_remote_code = False
 if trust_remote_code:
     model = AutoModel.from_pretrained(
@@ -107,8 +108,8 @@ def load_image(image_file, input_size=448, max_num=12):
     return pixel_values
 
 
-image_file_1 = 'N:/model/OpenGVLab/InternVL2-8B/examples/image1.jpg'
-image_file_2 = 'N:/model/OpenGVLab/InternVL2-8B/examples/image2.jpg'
+image_file_1 = '/mnt/n/model/OpenGVLab/InternVL2-8B/examples/image1.jpg'
+image_file_2 = '/mnt/model/OpenGVLab/InternVL2-8B/examples/image2.jpg'
 # set the max number of tiles in `max_num`
 pixel_values = load_image(image_file_1, max_num=12).to(torch.bfloat16).cuda()
 generation_config = dict(max_new_tokens=1024, do_sample=False)

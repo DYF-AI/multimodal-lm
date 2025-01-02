@@ -1,6 +1,10 @@
 
 import torch
-from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+#from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+#使用transformer,无法进入到模型(可能是wsl文件路径的bug)
+from qwen2_vl.modeling_qwen2_vl import Qwen2VLForConditionalGeneration
+from qwen2_vl.processing_qwen2_vl import Qwen2VLProcessor
+
 from qwen_vl_utils import process_vision_info
 
 MODEL_PATH = "/mnt/n/model/Qwen/Qwen2-VL-2B-Instruct"
@@ -20,7 +24,8 @@ model = Qwen2VLForConditionalGeneration.from_pretrained(
 
 # 这种加载方式占用显存约8.5GB
 # default processer
-processor = AutoProcessor.from_pretrained(MODEL_PATH)
+# processor = AutoProcessor.from_pretrained(MODEL_PATH)
+processor = Qwen2VLProcessor.from_pretrained(MODEL_PATH)
 # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
 # min_pixels = 256*28*28
 # max_pixels = 1280*28*28
@@ -30,6 +35,14 @@ processor = AutoProcessor.from_pretrained(MODEL_PATH)
 print(model)
 visual_params, qwen2_params = model.visual.num_parameters(), model.model.num_parameters()
 print(visual_params, qwen2_params)
+
+visual_params, qwen2_params
+#%%
+# model.model.resize_token_embeddings(2)
+vocab_nums = len(processor.tokenizer.get_vocab())
+add_vocab_nums = len(processor.tokenizer.get_added_vocab())
+print(f"vocab_nums:{vocab_nums}, add_vocab_nums:{add_vocab_nums}")
+
 
 # ============ 图片推理 ============
 messages = [

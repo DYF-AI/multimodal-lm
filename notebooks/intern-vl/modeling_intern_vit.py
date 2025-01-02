@@ -166,13 +166,13 @@ class InternVisionEmbeddings(nn.Module):
 
     def forward(self, pixel_values: torch.FloatTensor) -> torch.Tensor:
         target_dtype = self.patch_embedding.weight.dtype
-        patch_embeds = self.patch_embedding(pixel_values)  # shape = [*, channel, width, height] # 每个blocks, 都经过一个14x14，stride=14的卷积核（b, 1024, 448//14, 448//14）, 1024是channel个数
+        patch_embeds = self.patch_embedding(pixel_values)  # shape = [*, channel, width, height] # 每个blocks, 都经过一个14x14，stride=14的卷积核（b, 1024, 448//14, 448//14）, 1024是设定好的channel个数
         batch_size, _, height, width = patch_embeds.shape
         patch_embeds = patch_embeds.flatten(2).transpose(1, 2) # 对第二维进行flatten, transpose第1、2维, (b, seq_len, dim)
         class_embeds = self.class_embedding.expand(batch_size, 1, -1).to(target_dtype)  # 这里的class_embeds,主要用于一些特殊字符
         embeddings = torch.cat([class_embeds, patch_embeds], dim=1)
         position_embedding = torch.cat([
-            self.position_embedding[:, :1, :],
+            self.position_embedding[:, :1, :],   # class_embeds的position_embedding
             self._get_pos_embed(self.position_embedding[:, 1:, :], height, width)
         ], dim=1)
         embeddings = embeddings + position_embedding.to(target_dtype)
