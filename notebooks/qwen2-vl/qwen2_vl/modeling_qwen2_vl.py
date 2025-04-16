@@ -625,10 +625,10 @@ class Qwen2VLFlashAttention2(Qwen2VLAttention):
         cache_position: Optional[torch.LongTensor] = None,
         position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,  # necessary, but kept here for BC
     ):
-        bsz, q_len, _ = hidden_states.size()
+        bsz, q_len, _ = hidden_states.size()  # (bs, seq_len, dim)
 
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
+        query_states = self.q_proj(hidden_states) # (bs, seq_len, dim) # dim:1536
+        key_states = self.k_proj(hidden_states)   # (bs, seq_len, dim/group) # 1536/6=256, 12个头, 每个头1536/12=128维, 两个头一组128*2=256
         value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len, -1, self.head_dim).transpose(1, 2)
@@ -646,8 +646,8 @@ class Qwen2VLFlashAttention2(Qwen2VLAttention):
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
         # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, self.num_key_value_groups)
-        value_states = repeat_kv(value_states, self.num_key_value_groups)
+        key_states = repeat_kv(key_states, self.num_key_value_groups)  # key_states: (bs, 2, seq_len, head_dim=128) -> (bs, 12, seq_len, head_dim=128)
+        value_states = repeat_kv(value_states, self.num_key_value_groups) # value_states: (bs, 2, seq_len, head_dim=128) -> (bs, 12, seq_len, head_dim=128)
         dropout_rate = 0.0 if not self.training else self.attention_dropout
 
         # In PEFT, usually we cast the layer norms in float32 for training stability reasons
@@ -674,9 +674,9 @@ class Qwen2VLFlashAttention2(Qwen2VLAttention):
             value_states = value_states.to(target_dtype)
 
         # Reashape to the expected shape for Flash Attention
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
-        value_states = value_states.transpose(1, 2)
+        query_states = query_states.transpose(1, 2)  # (bs, seq_len, num_attention_heads, head_dim)
+        key_states = key_states.transpose(1, 2)  # (bs, seq_len, num_attention_heads, head_dim)
+        value_states = value_states.transpose(1, 2)  # (bs, seq_len, num_attention_heads, head_dim)
 
         if (
             self.config.use_sliding_window
@@ -697,9 +697,9 @@ class Qwen2VLFlashAttention2(Qwen2VLAttention):
             sliding_window=sliding_window,
             is_causal=self.is_causal,
             use_top_left_mask=self._flash_attn_uses_top_left_mask,
-        )
+        )   # (bs, seq_len, num_attention_heads, head_dim)
 
-        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size).contiguous()  # (bs, seq_len, num_attention_heads*head_dim)
         attn_output = self.o_proj(attn_output)
 
         if not output_attentions:
@@ -1102,7 +1102,7 @@ class Qwen2VLModel(Qwen2VLPreTrainedModel):
             attention_mask, inputs_embeds, cache_position, past_key_values, output_attentions
         )
 
-        hidden_states = inputs_embeds
+        hidden_states = inputs_embeds   # (bs, seq_len, dim)
 
         # create position embeddings to be shared across the decoder layers
         position_embeddings = self.rotary_emb(hidden_states, position_ids)
